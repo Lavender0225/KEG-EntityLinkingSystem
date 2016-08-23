@@ -9,7 +9,7 @@ public class Candidate {
 	private double label_startwith;
 	
 	private double sim_desc;
-	private double sim_context;
+	private double sim_context_entity;
 	private double sim_summary;
 	private double sim_label_context;
 	
@@ -17,7 +17,7 @@ public class Candidate {
 	public Candidate(){
 		label_edit_distance = 0;
 		popularity = 0;
-		sim_context = 0;
+		sim_context_entity = 0;
 		sim_summary = 0;
 		sim_label_context = 0;
 		score = 0;
@@ -52,11 +52,11 @@ public class Candidate {
 	public void setPopularity(double popularity) {
 		this.popularity = popularity;
 	}
-	public double getSim_context() {
-		return sim_context;
+	public double getSim_context_entity() {
+		return sim_context_entity;
 	}
-	public void setSim_context(double sim_context) {
-		this.sim_context = sim_context;
+	public void setSim_context_entity(double sim_context) {
+		this.sim_context_entity = sim_context;
 	}
 	public double getSim_summary() {
 		return sim_summary;
@@ -123,7 +123,7 @@ public class Candidate {
 				+ ", label_equals=" + label_equals + ", label_contains="
 				+ label_contains + ", label_startwith=" + label_startwith
 				+ ", sim_desc=" + sim_desc
-				+ ", sim_context=" + sim_context + ", sim_summary="
+				+ ", sim_context_entity=" + sim_context_entity + ", sim_summary="
 				+ sim_summary + ", sim_label_context=" + sim_label_context
 				+ "entity=" + entity 
 				+ "]";

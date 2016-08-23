@@ -56,13 +56,16 @@ public class TraditionalRanking {
 					String mention_desc = tmp[1].replaceAll("[\\)）\\]]", "");
 					candidate.setSim_desc(FeatureCal.simOfDescAndType(candidate.getEntity(), mention_desc));
 				}
+				
+				candidate.setSim_context_entity(FeatureCal.simContextEntity(candidate.getEntity(), mention));
 				// get final score
 				double score = candidate.getPopularity()
 						+ 2 * (1 - candidate.getLabel_edit_distance())
 						+ 2 * candidate.getLabel_equals()
 						+ candidate.getLabel_contains()
 						+ candidate.getLabel_startwith()
-						+ candidate.getSim_desc();
+						+ candidate.getSim_desc()
+						+ candidate.getSim_context_entity();
 				candidate.setScore(score);
 				// get highest score's entity id
 				if(tmp_max_score < score){
@@ -82,7 +85,6 @@ public class TraditionalRanking {
 		
 	}
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		TraditionalRanking TRtest = new TraditionalRanking();
 		Scanner sc = new Scanner(System.in); 
 		while(true){

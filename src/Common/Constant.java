@@ -1,8 +1,5 @@
 package Common;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class Constant {
 	//public static String entity_original_path = "./etc/entity/xlore.instance.mention.ttl";	// xlore's entity list
 	public static String entity_original_path = "./etc/entity_filter//entities_freq";	// xlore's entity list
@@ -27,6 +24,8 @@ public class Constant {
     public static int entity_min_length = 2;
     
     public static final String xlore_entity_prefix = "http://xlore.org/instance/";
+    
+    public static int mention_context_window = 20;
     
     
     

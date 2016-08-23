@@ -3,6 +3,7 @@ package MentionFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -10,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.ansj.domain.Result;
+import org.ansj.domain.Term;
+import org.ansj.splitWord.Analysis;
 import org.ansj.splitWord.analysis.NlpAnalysis;
 import org.ansj.splitWord.analysis.ToAnalysis;
 import org.apache.logging.log4j.LogManager;
@@ -254,8 +258,29 @@ public class MentionDisambiguation {
     	
     	for(AhoCorasickDoubleArrayTrie<String>.Hit<String> tmp_hit:wordList){
     		String label = doc.substring(tmp_hit.begin, tmp_hit.end);
-        	str.add(label+"::="+tmp_hit.value);
-        	stringMap.put(label, label+"::="+tmp_hit.value);
+    		
+    		/***************** This is the part of getting context info of a mention *********************/
+    		String prev_context = null;
+    		String after_context = null;
+    		int prev_context_start = tmp_hit.begin - Constant.mention_context_window;
+    		int after_context_end = tmp_hit.end + Constant.mention_context_window;
+    		if(prev_context_start > -1){
+    			prev_context = doc.substring(prev_context_start, tmp_hit.begin);
+    		}
+    		else{
+    			prev_context = doc.substring(0, tmp_hit.begin);
+    		}
+    		if(after_context_end < doc.length()){
+    			after_context = doc.substring(tmp_hit.end, after_context_end);
+    		}
+    		else{
+    			after_context = doc.substring(tmp_hit.end, doc.length() -1);
+    		}
+    		
+    		/******************************** end ******************************************/
+    		String text = label + "::=" + tmp_hit.value + ":::" + prev_context + ":::" + after_context;
+        	str.add(text);
+        	stringMap.put(label, text);
         	if(timeMap.containsKey(doc.substring(tmp_hit.begin, tmp_hit.end)))
         	{
         		timeMap.put(doc.substring(tmp_hit.begin, tmp_hit.end), timeMap.get(doc.substring(tmp_hit.begin, tmp_hit.end))+1);
@@ -288,8 +313,11 @@ public class MentionDisambiguation {
 	
 	private void insertMention(int begin, int end, String item)
 	{
-		String label = item.split("::=", 2)[0];
-		String value = item.split("::=", 2)[1];
+		String[] tmp = item.split(":::", 3);
+		String label = tmp[0].split("::=", 2)[0];
+		String value = tmp[0].split("::=", 2)[1];
+		String prev_context = tmp[1];
+		String after_context = tmp[2];
     	long start1 = 0;
     	long end1 = 0;
     	logger.info(item);
@@ -298,6 +326,9 @@ public class MentionDisambiguation {
     	mention.setLabel(label);
     	mention.setPos_start(begin);
     	mention.setPos_end(end);
+    	mention.setPrev_context(prev_context);
+    	mention.setAfter_context(after_context);
+    	mention.setContext_entity(getNounOfString(prev_context + after_context));
     	CandidateSet cs = new CandidateSet();
     	String[] tmp_c = value.split("::=");
     	for(String ss : tmp_c){
@@ -315,6 +346,24 @@ public class MentionDisambiguation {
 			cs.addElement(id, tmp_e);
     	}
     	candidateSetMap.put(mention, cs);
+	}
+	
+	private HashSet<String> getNounOfString(String text){
+		Result text_ansj = NlpAnalysis.parse(text);
+		HashSet<String> noun_list = new HashSet<String>();
+		for(Term item : text_ansj){
+			if(item.getNatureStr().contains("n")){
+				noun_list.add(item.getName());
+			}
+		}
+		//System.out.println(text_ansj.toString());
+		//System.out.println(noun_list);
+		return noun_list;
+	}
+	
+	public static void main(String[] args){
+		MentionDisambiguation ms = new MentionDisambiguation();
+		ms.getNounOfString("本月早些时候，外交部长王毅应约同美国国务卿克里通电话。王毅表示，中美元首即将在杭州举行的会晤是下阶段中美关系的最重要日程。克里表示，美方愿同中方合作，确保Ｇ２０杭州峰会取得圆满成功。");
 	}
 
 }

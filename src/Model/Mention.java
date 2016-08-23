@@ -1,5 +1,8 @@
 package Model;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+
 public class Mention {
 	
 	private String label;
@@ -9,9 +12,10 @@ public class Mention {
     private String after_context;
     private String uris;
     private String result_entity_id;
+    private HashSet<String> context_entity;
 
     public Mention(){
-
+    	context_entity = new HashSet<String>();
     }
 
     public String getLabel(){
@@ -72,11 +76,23 @@ public class Mention {
 		this.result_entity_id = result_entity_id;
 	}
 
+	public HashSet<String> getContext_entity() {
+		return context_entity;
+	}
+
+	public void setContext_entity(HashSet<String> context_entity) {
+		this.context_entity = context_entity;
+	}
+
 	@Override
 	public String toString() {
-		return "Mention [label=" + label + ", pos_start=" + pos_start + ", pos_end=" + pos_end + ", prev_context="
-				+ prev_context + ", after_context=" + after_context + ", uris=" + uris + ", result_entity_id="
-				+ result_entity_id + "]";
+		return "Mention [label=" + label + ", pos_start=" + pos_start + ", pos_end=" + pos_end
+				+ ", context_entity=" + context_entity
+				+ ", prev_context=" + prev_context + ", after_context=" + after_context 
+				+ ", uris=" + uris 
+				+ ", result_entity_id=" + result_entity_id 
+				
+				+ "]";
 	}
 
 	

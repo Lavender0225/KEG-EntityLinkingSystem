@@ -20,24 +20,6 @@ public class Entity extends AbstractEntity{
 	private HashMap<String, String> infobox_zh;	// key: property, value: property-value
 	private HashMap<String, String> infobox_en;
 	
-	public Entity(String id) {
-		super(id);
-		title = "";
-		alias = new ArrayList<String>();
-		uri = Constant.xlore_entity_prefix + id;
-		label_zh = "";
-		label_en = "";
-		abstract_en = "";
-		abstract_zh = "";
-		super_classes_en = new ArrayList<String>();
-		super_classes_zh = new ArrayList<String>();
-		related_entites_zh = new ArrayList<String>();
-		related_entites_en = new ArrayList<String>();
-		infobox_zh = new HashMap<String, String>();
-		setInfobox_en(new HashMap<String, String>());
-		
-	}
-	
 
 
 	public Entity(String id, String uri, String label_zh, String label_en, ArrayList<String> alias, 
