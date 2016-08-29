@@ -16,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import Common.Constant;
+import MentionFilter.EntityFilter;
 import Model.AbstractEntity;
 import Model.Entity;
 
@@ -25,7 +26,7 @@ import Model.Entity;
  * @update by ZJ on 16/7/19, add logger, comment
  */
 public class EntityPreprocess {
-	private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger("Log4jTest");
 	
 	/**
 	 * format:  <13> property:hasMention "Salavan (city)" .
@@ -113,6 +114,7 @@ public class EntityPreprocess {
                 System.out.println("has read:"+count);
                 //break;
         	}
+        	line = line.replaceAll("[\\[\\]]|'|\"|<|>|（|）|《|》|\\{|\\}|\\(|\\)", "");   //去引号和括号，增大匹配几率
             items = line.split("::;", 2);			// format: label::;uri::;desc1::;desc2
             if(items.length<2)
             	continue;
@@ -122,11 +124,42 @@ public class EntityPreprocess {
             }
             	
             else{
-            	String tmp_uris = entityMap.get(items[0]).split("::;")[0];//7820431
-            	String[] uri_des = items[1].split("::;");
-            	if(tmp_uris.compareTo(uri_des[0]) != 0){   //编号不同则合并
-            		//logger.info("get repeat iterm:"+items[0]+",uri and desc:"+entityMap.get(items[0])+"::="+items[1]);
-            		entityMap.put(items[0], entityMap.get(items[0])+"::="+items[1]);
+            	String idStr = entityMap.get(items[0]);    //已有的uri列表
+            	String[] uri_des = items[1].split("::;");   //待处理的uri
+            	if(idStr.contains("::=")){
+            		String[] idList = idStr.split("::="); 
+            		int t=0;
+            		for(t=0; t<idList.length; t++){
+            			if(idList[t].split("::;")[0].compareTo(uri_des[0]) == 0){   //找到编号相同则popularity相加再退出
+            				int tp = Integer.parseInt(idList[t].split("::;")[1])+Integer.parseInt(uri_des[1]);
+            				String uri = "";
+            				for(int m=0; m<idList.length; m++)
+            				{
+            					if(m == t)
+            					{
+            						idList[m] = uri_des[0]+"::;"+String.valueOf(tp);
+            					}
+            					if(m > 0)
+            					{
+            						uri += "::=";
+            					}
+            					uri += idList[m];
+            				}
+            				entityMap.put(items[0], uri);
+            				break;
+            			}
+            		}
+            		if(t == idList.length){	   //未找到编号相同的，则合并
+            			entityMap.put(items[0], idStr+"::="+items[1]);
+            		}
+            		
+            	}
+            	else{
+            		String tmp_uris = idStr.split("::;")[0];//7820431
+                	if(tmp_uris.compareTo(uri_des[0]) != 0){   //编号不同则合并
+                		//logger.info("get repeat iterm:"+items[0]+",uri and desc:"+entityMap.get(items[0])+"::="+items[1]);
+                		entityMap.put(items[0], idStr+"::="+items[1]);
+                	}
             	}
             }
             count++;
@@ -173,12 +206,55 @@ public class EntityPreprocess {
             }
             	
             else{
-            	String tmp_uris = entityMap.get(items[0]).split("::;")[0];//7820431
-            	String[] uri_des = items[1].split("::;");
+            	String idStr = entityMap.get(items[0]);    //已有的uri列表    6160344::;3::=261317::;1
+            	items = line.split("::=");
+            	int i=0;
+            	for(i=1; i<items.length; i++)
+            	{
+            		String[] uri_des = items[i].split("::;");   //待处理的uri
+                	if(idStr.contains("::=")){
+                		String[] idList = idStr.split("::="); 
+                		int t=0;
+                		for(t=0; t<idList.length; t++){
+                			if(idList[t].split("::;")[0].compareTo(uri_des[0]) == 0){   //找到编号相同则popularity相加再退出
+                				int tp = Integer.parseInt(idList[t].split("::;")[1])+Integer.parseInt(uri_des[1]);
+                				String uri = "";
+                				for(int m=0; m<idList.length; m++)
+                				{
+                					if(m == t)
+                					{
+                						idList[m] = uri_des[0]+"::;"+String.valueOf(tp);
+                					}
+                					if(m > 0)
+                					{
+                						uri += "::=";
+                					}
+                					uri += idList[m];
+                				}
+                				entityMap.put(items[0], uri);
+                				break;
+                			}
+                		}
+                		if(t == idList.length){	   //未找到编号相同的，则合并
+                			entityMap.put(items[0], idStr+"::="+items[i]);
+                		}
+                		
+                	}
+                	else{
+                		String tmp_uris = idStr.split("::;")[0];//7820431
+                    	if(tmp_uris.compareTo(uri_des[0]) != 0){   //编号不同则合并
+                    		//logger.info("get repeat iterm:"+items[0]+",uri and desc:"+entityMap.get(items[0])+"::="+items[1]);
+                    		entityMap.put(items[0], idStr+"::="+items[i]);
+                    	}
+                	}
+            	}
+            	/*String idStr = entityMap.get(items[0]);    //已有的uri列表
+            	String[] uri_des = items[1].split("::;");   //待处理的uri
+            	String tmp_uris = idStr.split("::;")[0];//7820431
             	if(tmp_uris.compareTo(uri_des[0]) != 0){   //编号不同则合并
             		//logger.info("get repeat iterm:"+items[0]+",uri and desc:"+entityMap.get(items[0])+"::="+items[1]);
-            		entityMap.put(items[0], entityMap.get(items[0])+"::="+items[1]);
-            	}
+            		entityMap.put(items[0], idStr+"::="+items[1]);
+            	}*/
             }
             count++;
         }
@@ -222,8 +298,8 @@ public class EntityPreprocess {
         HashSet<Character> chars = new HashSet<>();
         int line_count = 0;
         while((line = reader.readLine())!=null){
-        	line = line.replaceAll("[\\[\\]]|'|\"|<|>|（|）|《|》|\\{|\\}|\\(|\\)", "");
-        	line = line.toLowerCase();
+        	//line = line.replaceAll("[\\[\\]]|'|\"|<|>|（|）|《|》|\\{|\\}|\\(|\\)", "");
+        	//line = line.toLowerCase();
         	items = line.split("::=",2);
         	//if(!items[0].matches("[0-9a-zA-Z\u4e00-\u9fa5]+")||items[0].length()<Constant.entity_min_length)
         	if(items[0].length()<Constant.entity_min_length)
@@ -263,15 +339,17 @@ public class EntityPreprocess {
     }
     
     public static void main(String[] args) throws Exception {
-    	//EntityFilter.filter(5);
+    	EntityFilter.filter(4);
     	//formatter(Constant.entity_original_path, Constant.entity_formatted_path);
-    	//System.out.println("#sorted entities: "+EntitySort(Constant.entity_formatted_path, Constant.entity_formatted_sorted));
-    	//filter(Constant.entity_formatted_sorted, Constant.entity_ready_file);
-    	
-    	
-    	//将多个领域的实体集放到formatted_path中，然后去掉重复的
-    	System.out.println("#sorted entities: "+newEntitySort(Constant.entity_formatted_path, Constant.entity_formatted_sorted));
+    	//formatter(Constant.entityCountInput, Constant.entity_formatted_path);
+    	System.out.println("#sorted entities: "+EntitySort(Constant.entity_original_path, Constant.entity_formatted_sorted));
     	filter(Constant.entity_formatted_sorted, Constant.entity_ready_file);
+    	
+    	
+    	//将多个领域的实体集放到entity_original_path中，然后去掉重复的
+    	//System.out.println("#sorted entities: "+newEntitySort(Constant.entity_original_path, Constant.entity_ready_file));
+    	
+    	//partition(1250547,"./etc/entity_filter/entities_freq","./etc/entity/人物");
     	
 //    	partition(4000000, Constant.entity_file, Constant.entity_file+"_1");
 //    	System.out.println("partition finished!");

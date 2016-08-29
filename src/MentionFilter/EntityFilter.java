@@ -15,11 +15,14 @@ import Common.Constant;
  * 在建立索引前过滤实体集，得到特定领域实体集freqEntities
  * 也可于commonEntities中建立一般实体集
  */
-public class EntityFilter {
+public class EntityFilter 
+{
 	//sets
 	private Set<String> freqLabels ;
 	private Set<String> freqConcepts ;
 	private Set<String> freqEntities ;
+	
+	private Set<String> stopConcepts ;
 	
 	private Map<String,Set<String> > conceptTree ;//parent id : children ids
 	private Map<String,Set<String> > concepts ;//id : label
@@ -33,13 +36,15 @@ public class EntityFilter {
 	/**
 	 * Constructor
 	 */
-	public EntityFilter() {
+	public EntityFilter() 
+	{
 		
 		this.conceptTree=new HashMap();
 		this.concepts=new HashMap();
 		this.freqLabels=new HashSet();
 		this.freqConcepts=new HashSet();
 		this.freqEntities=new HashSet();
+		this.stopConcepts = new HashSet();
 		
 		this.freqEntityClass = new HashMap() ;
 	}
@@ -48,7 +53,9 @@ public class EntityFilter {
 	{
 		EntityFilter filter = new EntityFilter();
 		filter.loadLabels();  //读取想要保留的类别的根节点存到freqConcepts和freqLabels
-		filter.loadConcepts();   //读取想要去掉的类别的根节点存到stopConcepts和stopLabels
+		
+		filter.loadStopConcepts();   //读取想要去掉的类别的根节点存到stopConcepts和stopLabels
+		
 		filter.loadConceptTree();  //读取父类和它的所有子类的set到Map<String,Set<String> > conceptTree
 		filter.filterConcepts(fre);  //将要保留的类别下的所有子类别存在freqConcepts中，去掉的存在stopConcepts
 		filter.filterEntities();  //将要保留的instace存在freqEntities，去掉的存在stopEntities
@@ -100,7 +107,8 @@ public class EntityFilter {
 		reader.close();	
 	}
 	
-	private void saveEntities() throws IOException{
+	private void saveEntities() throws IOException
+	{
 		FileWriter w_freq = new FileWriter(Constant.freqEntityPath);
 		FileWriter w_common = new FileWriter(Constant.commonEntityPath);
 		
@@ -155,11 +163,13 @@ public class EntityFilter {
 		}
 
 		//System.out.println("conceptTree现在是："+conceptTree.size());  //354211个中间节点
+		freqConcepts.removeAll(stopConcepts);
 		System.out.println("#frequency concepts "+freqConcepts.size());//
 		
 	}
 	
-	private void saveConcepts() throws IOException {
+	private void saveConcepts() throws IOException 
+	{
 		
 		BufferedReader reader = new BufferedReader(new FileReader(Constant.concept_path));
 		String[] tmp = null;
@@ -192,7 +202,8 @@ public class EntityFilter {
 		reader.close();
 	}
 	
-	private void loadConceptTree() throws IOException{
+	private void loadConceptTree() throws IOException
+	{
 		BufferedReader reader = new BufferedReader(new FileReader(Constant.taxonomy_path));
 		String line = null;  //xlore.taxonomy.ttl，1.36GB
 		String[] tmp = null;
@@ -224,8 +235,15 @@ public class EntityFilter {
 		System.out.println("#concept tree "+conceptTree.size());
 	}
 
-	private void loadConcepts() throws IOException{
-		
+	private void loadStopConcepts() throws IOException{
+		BufferedReader reader = new BufferedReader(new FileReader("./etc/concept/concepts_stop"));
+		String line = null;
+		while((line=reader.readLine())!=null)
+		{
+			stopConcepts.add(line.split("::=")[0]);
+		}
+		//System.out.println(stopConcepts.size());
+		reader.close();
 	}
 	
 	private void loadLabels() throws IOException{
@@ -261,9 +279,11 @@ public class EntityFilter {
 				if(!freqConcepts.contains(cId))
 				{
 					for (String str : freqLabels) {  //找含有这个词的concept
-					      if(label.indexOf(str) != -1)
+					      //if(label.indexOf(str) != -1)
+						  //if(label.endsWith(str) && !label.endsWith("国家"))
+						  if(label.endsWith(str))
 					      {
-					    	  //System.out.println(cId + "    " + label);
+					    	  System.out.println(cId + "    " + label);
 					    	  freqConcepts.add(cId);
 					      }
 					} 
