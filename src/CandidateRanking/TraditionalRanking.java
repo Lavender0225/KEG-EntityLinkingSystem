@@ -10,7 +10,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import CandidateGeneration.GenCandidateSet;
-import Common.Constant;
 import Model.Candidate;
 import Model.CandidateSet;
 import Model.Mention;
@@ -65,7 +64,7 @@ public class TraditionalRanking {
 						+ candidate.getLabel_contains()
 						+ candidate.getLabel_startwith()
 						+ candidate.getSim_desc()
-						+ candidate.getSim_context_entity();
+						+ 5 * candidate.getSim_context_entity();
 				candidate.setScore(score);
 				// get highest score's entity id
 				if(tmp_max_score < score){
