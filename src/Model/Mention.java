@@ -86,7 +86,9 @@ public class Mention {
 
 	@Override
 	public String toString() {
-		return "Mention [label=" + label + ", pos_start=" + pos_start + ", pos_end=" + pos_end
+		return "Mention [label=" + label 
+				+ ", result_entity_id=" + result_entity_id
+				+ ", pos_start=" + pos_start + ", pos_end=" + pos_end
 				+ ", context_entity=" + context_entity
 				+ ", prev_context=" + prev_context + ", after_context=" + after_context 
 				+ ", uris=" + uris 

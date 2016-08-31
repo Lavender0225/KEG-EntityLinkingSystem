@@ -178,12 +178,15 @@ public class Entity extends AbstractEntity{
 
 	@Override
 	public String toString() {
-		return "Entity [uri=" + uri + ", alias=" + alias + ", label_zh=" + label_zh + ", label_en=" + label_en
+		return "Entity ["
+				+ "id=" + getId()
+				+ ", uri=" + uri + ", alias=" + alias + ", label_zh=" + label_zh + ", label_en=" + label_en
 				+ ", abstract_en=" + abstract_en + ", abstract_zh=" + abstract_zh + ", desc=" + desc + ", super_classes_en="
 				+ super_classes_en + ", super_classes_zh=" + super_classes_zh + ", related_entites_zh=" + related_entites_zh
 				+ ", related_entites_en=" + related_entites_en + ", infobox_zh=" + infobox_zh + ", infobox_en=" + infobox_en
-				+ ", title=" + title + ", id="
-				+ id + "]";
+				+ ", title=" + title 
+				 
+				+ "]";
 	}
 
 

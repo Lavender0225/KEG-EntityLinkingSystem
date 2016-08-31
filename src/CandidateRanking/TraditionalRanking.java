@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import CandidateGeneration.GenCandidateSet;
+import Common.Constant;
 import Model.Candidate;
 import Model.CandidateSet;
 import Model.Mention;
@@ -21,6 +22,7 @@ public class TraditionalRanking {
 	
 	public void processing(String doc){
 		candidateSetMap = GenCandidateSet.extractMentionForNewsFromString(doc);
+		logger.info(candidateSetMap.toString());
 		getFeatures();
 		logger.info(candidateSetMap.toString());
 	}
@@ -33,8 +35,8 @@ public class TraditionalRanking {
 			Mention mention = entry.getKey();
 			CandidateSet candidateSet = entry.getValue();
 			Iterator<Entry<String, Candidate>> entries2 = candidateSet.getSet().entrySet().iterator();
-			String result_entity_id = null;
-			double tmp_max_score = -1;
+			double max_score = -1;
+			// first circle, find the highest related score
 			while(entries2.hasNext()){
 				Entry<String, Candidate> entry2 = entries2.next();
 				String entity_id = entry2.getKey();
@@ -43,7 +45,11 @@ public class TraditionalRanking {
 				ArrayList<String> entity_alias = candidate.getEntity().getAlias();
 				String mention_label = mention.getLabel();
 				
-				candidate.setPopularity(Math.log(XloreGetPopularity.getPopularity(entity_id)));
+				candidate.setPopularity(XloreGetPopularity.getPopularity(mention_label, entity_id));
+				 if(candidate.getPopularity() < Constant.t){
+					 System.out.println("The commonness is too low: "+ mention_label + ", id:" + entity_id);
+					 entries2.remove();
+				 }
 				
 				candidate.setLabel_edit_distance(FeatureCal.editDistanceOfEntityAndMention(entity_alias, mention_label));
 				candidate.setLabel_equals(FeatureCal.surfaceEqual(entity_alias, mention_label));
@@ -58,25 +64,58 @@ public class TraditionalRanking {
 				
 				candidate.setSim_context_entity(FeatureCal.simContextEntity(candidate.getEntity(), mention));
 				// get final score
-				double score = candidate.getPopularity()
-						+ 2 * (1 - candidate.getLabel_edit_distance())
-						+ 2 * candidate.getLabel_equals()
-						+ candidate.getLabel_contains()
-						+ candidate.getLabel_startwith()
-						+ candidate.getSim_desc()
-						+ 5 * candidate.getSim_context_entity();
-				candidate.setScore(score);
+				double  lable_sim_score = (0.4 * (1 - candidate.getLabel_edit_distance())
+						+ 0.4 * candidate.getLabel_equals()
+						+ 0.2 * candidate.getLabel_contains()
+						+ 0.2 * candidate.getLabel_startwith()
+						+ 0.2 * candidate.getSim_desc()
+						+ candidate.getSim_context_entity())/2;
+				candidate.setScore(lable_sim_score);
 				// get highest score's entity id
-				if(tmp_max_score < score){
-					tmp_max_score = score;
-					result_entity_id = entity_id;
+				if(max_score < lable_sim_score){
+					max_score = lable_sim_score;
 				}
-				// ranking candidates according to final score
-				candidateSet.setSet(CandidateSet.sortByValue(candidateSet.getSet(), true));
-				// set ranking result in mention
-				mention.setResult_entity_id(result_entity_id);
+				
+				//logger.info("Mention: "+ mention_label + "The most related entity score:" + max_score);
 			}
 			
+			
+			// second, delete the candidates that are not related to the mention
+			entries2 = candidateSet.getSet().entrySet().iterator();
+			while(entries2.hasNext()){
+				Entry<String, Candidate> entry2 = entries2.next();
+				Candidate candidate = entry2.getValue();
+				if(candidate.getScore() < max_score - Constant.sigma){
+					entries2.remove();
+				}
+			}
+			
+			// third, choose the one with highest popularity as the final result
+			String result_entity_id = null;
+			double highest_score = 0;
+			entries2 = candidateSet.getSet().entrySet().iterator();
+			while(entries2.hasNext()){
+				Entry<String, Candidate> entry2 = entries2.next();
+				Candidate candidate = entry2.getValue();
+				if(candidate.getPopularity() > highest_score){
+					highest_score = candidate.getPopularity();
+					result_entity_id = candidate.getEntity().getId();
+				}
+			}
+			logger.info(mention.getLabel() + ", the highest commonness: "+ highest_score + ", id: "+ result_entity_id);
+			mention.setResult_entity_id(result_entity_id);
+			
+			// finally, for the mentions with only one candidate, decide whether to keep it
+			if(candidateSet.getSet().size() == 1){
+				entries2 = candidateSet.getSet().entrySet().iterator();
+				Entry<String, Candidate> entry2 = entries2.next();
+				Candidate candidate = entry2.getValue();
+				if(candidate.getScore() < 0.3){
+					//entries2.remove();
+					mention.setResult_entity_id(null);
+				}
+				
+			}
 		}
 		long end = System.currentTimeMillis();
 		System.out.println("Ranking finish!" + " Ranking time:"+ (double)(end-start)/1000);

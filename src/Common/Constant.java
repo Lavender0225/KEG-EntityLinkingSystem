@@ -27,7 +27,13 @@ public class Constant {
     
     public static int mention_context_window = 20;
     
-    public static String popularity_path = "./etc/entity/popularity.txt";
+    //public static String popularity_path = "./etc/entity/popularity.txt";
+    public static String commonness_path = "./etc/entity/commonness.txt";
+    
+    // constants of traditional ranking algorithm
+    public static double sigma = 0.3;
+    public static double t = 0.01;
+    
     
     
     

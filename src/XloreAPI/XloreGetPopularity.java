@@ -2,6 +2,7 @@ package XloreAPI;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -12,7 +13,6 @@ import java.io.OutputStreamWriter;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -23,27 +23,109 @@ import java.util.Map.Entry;
 import Common.Constant;
 
 public class XloreGetPopularity {
-	private static HashMap<String, Integer> popularityMap = new HashMap<String, Integer>(); // P(e)
-	private static HashMap<String, HashSet<String>> IdMentionMap = new HashMap<String, HashSet<String>>(); 
+	//private static HashMap<String, Integer> popularityMap = new HashMap<String, Integer>(); // P(e)
+	private static HashMap<String, HashMap<String, Float>> commonnessMap = new HashMap<String, HashMap<String, Float>>();
+	//private static HashMap<String, HashSet<String>> IdMentionMap = new HashMap<String, HashSet<String>>(); 
 	
 	private XloreGetPopularity(){
 		
 	}
-	
 	private static void loadPopularityMap(){
+		File f = new File(Constant.commonness_path);		
+		if(f.exists() && !f.isDirectory()) { 
+			loadCommonness(Constant.commonness_path);
+		}
+		else{
+			loadCommonnessMap();
+		}
+	}
+	/**
+	 * from file Constant.entityCountInput construct commonnessMap
+	 */
+	private static void loadCommonnessMap(){
 		InputStream is = null;
 		try {
-		    is = new FileInputStream(Constant.popularity_path);
+		    is = new FileInputStream(Constant.entityCountInput);
+		    @SuppressWarnings("resource")
+		    BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"), 512);
+		    String line = null;
+		    while((line = reader.readLine())!=null){
+		        line = line.trim();
+		        String[] tmp_list = line.split("::;");
+		        String mention = tmp_list[0].replaceAll("[《》\\[\\]\\(\\)【】\\\"\\“\\”<>]", "");
+		        String id = tmp_list[1];
+		        Float count = Float.valueOf(tmp_list[2]);
+
+		        if(!commonnessMap.containsKey(mention)){
+		        	commonnessMap.put(mention, new HashMap<String, Float>());
+		        	
+		        }
+		        commonnessMap.get(mention).put(id, count);
+		    }
+		    
+		    Iterator<Entry<String, HashMap<String, Float>>> entries = commonnessMap.entrySet().iterator();
+	        while(entries.hasNext()){
+				Map.Entry<String, HashMap<String, Float>> entry =  entries.next();    
+			    HashMap<String, Float> commonness = entry.getValue();
+			    float total_freq = 0;
+			    Iterator<Entry<String, Float>> entries2 = commonness.entrySet().iterator();
+			    while(entries2.hasNext()){
+			    	Map.Entry<String, Float> entry2 = entries2.next();
+			    	total_freq += entry2.getValue();
+			    }
+			    entries2 = commonness.entrySet().iterator();
+			    while(entries2.hasNext()){
+			    	Map.Entry<String, Float> entry2 = entries2.next();
+			    	entry2.setValue(entry2.getValue()/total_freq);
+			    }
+			}
+		    System.out.println("loading commomnness map finished!");
+//		    sortByValue(popularityMap, true);
+//		    System.out.println("sorting finished!");
+		}catch (IOException ioe){
+		    ioe.printStackTrace();
+		} finally {
+		    try {
+		        if (is != null) {
+		            is.close();
+		            is = null;
+		        }
+		    } catch (IOException e) {
+		        e.printStackTrace();
+		    }
+		}
+		    
+	}
+	/**
+	 * 
+	 * @param path
+	 */
+	private static void loadCommonness(String path){
+		InputStream is = null;
+		try {
+		    is = new FileInputStream(path);
 		    @SuppressWarnings("resource")
 		    BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"), 512);
 		    String line = null;
 		    while((line = reader.readLine())!=null){
 		        line = line.trim();
 		        String[] tmp_list = line.split("::=");
-		        String id = tmp_list[0];
-		        String count = tmp_list[1];
-
-		        popularityMap.put(id, Integer.valueOf(count));
+		        if(tmp_list.length == 1){
+		        	System.out.println(line);
+		        }
+		        String mention = tmp_list[0];
+		        try{
+			        String id = tmp_list[1];
+			        Float p = Float.valueOf(tmp_list[2]);
+	
+			        if(!commonnessMap.containsKey(mention)){
+			        	commonnessMap.put(mention, new HashMap<String, Float>());
+			        }
+			        commonnessMap.get(mention).put(id, p);
+			        
+		        }catch(java.lang.ArrayIndexOutOfBoundsException e){
+		        	System.out.println(line);
+		        }
 		        
 		    }
 		    System.out.println("loading popularity finished!");
@@ -62,61 +144,70 @@ public class XloreGetPopularity {
 		    }
 		}  
 	}
-	public static void loadIdMentionMap(){
-		InputStream is = null;
-		try {
-		    is = new FileInputStream(Constant.entityCountInput);
-		    @SuppressWarnings("resource")
-		    BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"), 512);
-		    String line = null;
-		    while((line = reader.readLine())!=null){
-		        line = line.trim();
-		        String[] tmp_list = line.split("::;");
-		        String mention = tmp_list[0];
-		        String id = tmp_list[1];
-		        if(!IdMentionMap.containsKey(id)){
-		        	IdMentionMap.put(id, new HashSet<String>());
-		        }
-		        IdMentionMap.get(id).add(mention);
-		    }
-		    System.out.println("loading id-mention map finished!");
-//		    sortByValue(popularityMap, true);
-//		    System.out.println("sorting finished!");
-		}catch (IOException ioe){
-		    ioe.printStackTrace();
-		} finally {
-		    try {
-		        if (is != null) {
-		            is.close();
-		            is = null;
-		        }
-		    } catch (IOException e) {
-		        e.printStackTrace();
-		    }
-		}  
-	}
-	public static int getPopularity(String id){
-		if(popularityMap.size() == 0){
+//	
+//	public static void loadIdMentionMap(){
+//		InputStream is = null;
+//		try {
+//		    is = new FileInputStream(Constant.entityCountInput);
+//		    @SuppressWarnings("resource")
+//		    BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"), 512);
+//		    String line = null;
+//		    while((line = reader.readLine())!=null){
+//		        line = line.trim();
+//		        String[] tmp_list = line.split("::;");
+//		        String mention = tmp_list[0];
+//		        String id = tmp_list[1];
+//		        if(!IdMentionMap.containsKey(id)){
+//		        	IdMentionMap.put(id, new HashSet<String>());
+//		        }
+//		        IdMentionMap.get(id).add(mention);
+//		    }
+//		    System.out.println("loading id-mention map finished!");
+////		    sortByValue(popularityMap, true);
+////		    System.out.println("sorting finished!");
+//		}catch (IOException ioe){
+//		    ioe.printStackTrace();
+//		} finally {
+//		    try {
+//		        if (is != null) {
+//		            is.close();
+//		            is = null;
+//		        }
+//		    } catch (IOException e) {
+//		        e.printStackTrace();
+//		    }
+//		}  
+//	}
+	public static double getPopularity(String mention, String id){
+		if(commonnessMap.size() == 0){
 			loadPopularityMap();
 		}
-		if(popularityMap.containsKey(id)){
-			return popularityMap.get(id);
+		if(commonnessMap.containsKey(mention)){
+			if(commonnessMap.get(mention).containsKey(id)){
+				System.out.println("get the commonness of " + mention + "&&" + id + ": "+ String.valueOf(commonnessMap.get(mention).get(id) + ", "+commonnessMap.get(mention)));
+				return (double)commonnessMap.get(mention).get(id);
+			}
 		}
 		return 0;
 	}
-	
-	public static void outputMentions(){
+	public static void outputCommonness(){
 		OutputStream o = null;
 	    try {
-	        o = new FileOutputStream("./etc/entity/id-mention.txt");
+	        o = new FileOutputStream("./etc/entity/commonness.txt");
 	        @SuppressWarnings("resource")
 	        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(o, "UTF-8"), 512);
-	        Iterator<Entry<String, HashSet<String>>> entries = IdMentionMap.entrySet().iterator();
+	        Iterator<Entry<String, HashMap<String, Float>>> entries = commonnessMap.entrySet().iterator();
 	        while(entries.hasNext()){
-				Map.Entry<String, HashSet<String>> entry =  entries.next();  
-			    String id = entry.getKey();  
-			    HashSet<String> mentions = entry.getValue();
-			    writer.write( id + "::=" + mentions + "\n");
+				Map.Entry<String, HashMap<String, Float>> entry =  entries.next();  
+			    String mention = entry.getKey();  
+			    HashMap<String, Float> commonness = entry.getValue();
+			    Iterator<Entry<String, Float>> entries2 = commonness.entrySet().iterator();
+			    while(entries2.hasNext()){
+			    	Map.Entry<String, Float> entry2 = entries2.next();
+			    	String id = entry2.getKey();
+			    	Float p = entry2.getValue();
+			    	writer.write(mention + "::="+ id + "::=" + String.valueOf(p)+"\n");
+			    }
 			}
 	    }catch (IOException ioe){
 	        ioe.printStackTrace();
@@ -131,33 +222,60 @@ public class XloreGetPopularity {
 	        }
 	    }
 	}
-	
-	public void outPut(){
-		OutputStream o = null;
-	    try {
-	        o = new FileOutputStream("./etc/entity/popularity.txt");
-	        @SuppressWarnings("resource")
-	        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(o, "UTF-8"), 512);
-	        Iterator<Entry<String, Integer>> entries = popularityMap.entrySet().iterator();
-	        while(entries.hasNext()){
-				Map.Entry<String, Integer> entry = (Map.Entry<String, Integer>) entries.next();  
-			    String id = entry.getKey();  
-			    Integer num = entry.getValue();
-			    writer.write( id + "::=" + String.valueOf(num) + "\n");
-			}
-	    }catch (IOException ioe){
-	        ioe.printStackTrace();
-	    } finally {
-	        try {
-	            if (o != null) {
-	                o.close();
-	                o = null;
-	            }
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
-	    }
-	}
+//	
+//	public static void outputMentions(){
+//		OutputStream o = null;
+//	    try {
+//	        o = new FileOutputStream("./etc/entity/id-mention.txt");
+//	        @SuppressWarnings("resource")
+//	        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(o, "UTF-8"), 512);
+//	        Iterator<Entry<String, HashSet<String>>> entries = IdMentionMap.entrySet().iterator();
+//	        while(entries.hasNext()){
+//				Map.Entry<String, HashSet<String>> entry =  entries.next();  
+//			    String id = entry.getKey();  
+//			    HashSet<String> mentions = entry.getValue();
+//			    writer.write( id + "::=" + mentions + "\n");
+//			}
+//	    }catch (IOException ioe){
+//	        ioe.printStackTrace();
+//	    } finally {
+//	        try {
+//	            if (o != null) {
+//	                o.close();
+//	                o = null;
+//	            }
+//	        } catch (IOException e) {
+//	            e.printStackTrace();
+//	        }
+//	    }
+//	}
+//	
+//	public void outPut(){
+//		OutputStream o = null;
+//	    try {
+//	        o = new FileOutputStream("./etc/entity/popularity.txt");
+//	        @SuppressWarnings("resource")
+//	        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(o, "UTF-8"), 512);
+//	        Iterator<Entry<String, Integer>> entries = popularityMap.entrySet().iterator();
+//	        while(entries.hasNext()){
+//				Map.Entry<String, Integer> entry = (Map.Entry<String, Integer>) entries.next();  
+//			    String id = entry.getKey();  
+//			    Integer num = entry.getValue();
+//			    writer.write( id + "::=" + String.valueOf(num) + "\n");
+//			}
+//	    }catch (IOException ioe){
+//	        ioe.printStackTrace();
+//	    } finally {
+//	        try {
+//	            if (o != null) {
+//	                o.close();
+//	                o = null;
+//	            }
+//	        } catch (IOException e) {
+//	            e.printStackTrace();
+//	        }
+//	    }
+//	}
 	
 	/**
 	 * 排序函数，默认升序，reverse控制是否降序
@@ -197,8 +315,9 @@ public class XloreGetPopularity {
     } 
 
 	public static void main(String[] args) {
-		XloreGetPopularity.loadIdMentionMap();
-		XloreGetPopularity.outputMentions();
+		XloreGetPopularity.loadPopularityMap();
+		XloreGetPopularity.outputCommonness();
+		System.out.println(XloreGetPopularity.getPopularity("1", "12197909"));
 
 	}
 

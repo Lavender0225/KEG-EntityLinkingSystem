@@ -3,15 +3,13 @@ package MentionFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.ansj.domain.Result;
+import org.ansj.domain.Term;
 import org.ansj.splitWord.analysis.NlpAnalysis;
-import org.ansj.splitWord.analysis.ToAnalysis;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,7 +18,6 @@ import Common.Constant;
 import Common.FileManipulator;
 import EntityIndex.AhoCorasickDoubleArrayTrie;
 import EntityIndex.IndexBuilder;
-import EntityIndex.AhoCorasickDoubleArrayTrie.Hit;
 import Model.CandidateSet;
 import Model.Entity;
 import Model.Mention;
@@ -29,7 +26,6 @@ public class MentionDisambiguation {
 
 	private List<String> extractResult = new ArrayList<String>();
 	private List<String> midResult = new ArrayList<String>();
-	//private HashMap<String, Integer> scoreMap = new HashMap<String, Integer>();  //label   score
 	private HashMap<String, Integer> timeMap = new HashMap<String, Integer>();  //label   score
 	private HashMap<String, String> stringMap = new HashMap<String, String>();   //label   label::=value
 	
@@ -57,82 +53,6 @@ public class MentionDisambiguation {
 		}
 		return choice;
 	}
-	
-	private int selectByPopu(List<String> result, IndexBuilder ibd, String doc)
-	{
-		int choice = 0;
-		int popuMax = 0;
-		for(int k=0; k<result.size(); k++)
-		{
-			String[] strsplit = result.get(k).split(";");
-			int score = timeMap.get(doc.substring(Integer.parseInt(strsplit[0]), Integer.parseInt(strsplit[1])));
-			if(popuMax < score)
-			{
-				popuMax = score;
-				choice = k;
-			}
-		}
-		return choice;
-	}
-	
-	private List<Integer> selectByExtract(List<String> result, IndexBuilder ibd, String doc)
-	{
-		List<Integer> choice = new ArrayList<Integer>();
-		for(int k=0; k<result.size(); k++)
-		{
-			String[] strsplit = result.get(k).split(";");
-			if(extractResult.contains(doc.substring(Integer.parseInt(strsplit[0]), Integer.parseInt(strsplit[1]))))
-			{
-				choice.add(k);
-			}
-		}
-		return choice;
-	}
-	/*private void leaveOneId(List<String> str)  //只留一个编号
-	{
-		for(int i=0; i<str.size(); i++)
-		{
-			String[] strsplit = str.get(i).split("::=");
-			stringMap.put(strsplit[0], str.get(i));
-			if(strsplit.length > 2)
-			{
-				int max = 1;
-				for(int j=1; j<strsplit.length-1; j++)
-				{
-					String[] idSplit1 = strsplit[max].split("::;");
-					String[] idSplit2 = strsplit[j+1].split("::;");
-					if(Integer.parseInt(idSplit1[1])<Integer.parseInt(idSplit2[1]))
-					{
-						max = j+1;
-					}
-				}
-				str.set(i, strsplit[0]+"::="+strsplit[max]);
-			}
-			//System.out.println(str.get(i));
-		}
-		midResult.addAll(str);
-	}
-	
-	private void filterbyScore(List<String> str)  //去掉频度不高于5的
-	{
-		midResult.clear();
-		for(int i=0; i<str.size(); i++)
-		{
-			String[] strsplit = str.get(i).split("::=");
-			int score = 0;
-			String[] idSplit = strsplit[1].split("::;");
-			score += Integer.parseInt(idSplit[1]);
-			scoreMap.put(strsplit[0], score);
-			Pattern pattern = Pattern.compile("[0-9]*"); 
-			if(score>5)
-			{
-				//System.out.println(str.get(i));
-				midResult.add(str.get(i));
-				Ps_result.add(PositionStart.get(i));
-				Pe_result.add(PositionEnd.get(i));
-			}
-		}
-	}*/
 	
 	private void filterNumber(List<String> str)  //去掉数字，日期，时间
 	{
@@ -206,29 +126,20 @@ public class MentionDisambiguation {
 			int length = Integer.parseInt(split[1])-Integer.parseInt(split[0]);
 			scoreList.set(choice, scoreList.get(choice)+length);  //+长度
 			//System.out.println(choice+" "+scoreList.get(choice));
-			
-			//选择得分最高的
-			//choice = selectByPopu(result, ibd, doc);
-			//scoreList.set(choice, scoreList.get(choice)+2);   //+2
-			//System.out.println(choice+"  "+scoreList.get(choice));
+
 			for(int m=0; m<result.size(); m++)
 			{
-				if(extractResult.contains(doc.substring(Integer.parseInt(split[0]), Integer.parseInt(split[1]))))
-				{
-					scoreList.set(m, scoreList.get(m)+2);
-				}
+				String[] strsplit = result.get(m).split(";");
 				
-			}
-			
-			//分词结果中含有
-			List<Integer> cho = new ArrayList<Integer>();
-			cho = selectByExtract(result, ibd, doc);
-			for(int s=0; s<cho.size(); s++)
-			{
-				scoreList.set(s, scoreList.get(s)+2);  //+1
-				//System.out.println(s+"     "+scoreList.get(s));
-			}
-			
+				int freq = timeMap.get(doc.substring(Integer.parseInt(strsplit[0]), Integer.parseInt(strsplit[1])));
+				scoreList.set(m, scoreList.get(m)+freq);  //+出现次数
+				
+				if(extractResult.contains(doc.substring(Integer.parseInt(strsplit[0]), Integer.parseInt(strsplit[1]))))
+				{
+					scoreList.set(m, scoreList.get(m)+2);  //分词结果中含有则+2
+				}
+				//System.out.println(m+" "+scoreList.get(m));
+			}		
 			
 			int max = 0;
 			for(int m=0; m<result.size(); m++)
@@ -263,12 +174,33 @@ public class MentionDisambiguation {
     	long end = System.currentTimeMillis(); 
         logger.info("Parsing doc finish! Time:" + (float)(end - start)/1000);
     	System.out.println("Parsing doc finish! Time:" + (float)(end - start)/1000);
-    	logger.info(candidateSetMap.toString());
+    	//logger.info(candidateSetMap.toString());
     	
     	for(AhoCorasickDoubleArrayTrie<String>.Hit<String> tmp_hit:wordList){
     		String label = doc.substring(tmp_hit.begin, tmp_hit.end);
-        	str.add(label+"::="+tmp_hit.value);
-        	stringMap.put(label, label+"::="+tmp_hit.value);
+    		/***************** This is the part of getting context info of a mention *********************/
+    		String prev_context = null;
+    		String after_context = null;
+    		int prev_context_start = tmp_hit.begin - Constant.mention_context_window;
+    		int after_context_end = tmp_hit.end + Constant.mention_context_window;
+    		if(prev_context_start > -1){
+    			prev_context = doc.substring(prev_context_start, tmp_hit.begin);
+    		}
+    		else{
+    			prev_context = doc.substring(0, tmp_hit.begin);
+    		}
+    		if(after_context_end < doc.length()){
+    			after_context = doc.substring(tmp_hit.end, after_context_end);
+    		}
+    		else{
+    			after_context = doc.substring(tmp_hit.end, doc.length() -1);
+    		}
+    		
+    		/******************************** end ******************************************/
+    		String text = label + "::=" + tmp_hit.value + ":::" + prev_context + ":::" + after_context;
+        	str.add(text);
+        	stringMap.put(label, text);
+
         	if(timeMap.containsKey(doc.substring(tmp_hit.begin, tmp_hit.end)))
         	{
         		timeMap.put(doc.substring(tmp_hit.begin, tmp_hit.end), timeMap.get(doc.substring(tmp_hit.begin, tmp_hit.end))+1);
@@ -286,23 +218,26 @@ public class MentionDisambiguation {
 			System.out.println(key + " " + value);
     	}*/
     	FileManipulator.outputStringList(str, System.getProperty("user.dir") + news_path+"_original.txt");
-    	
-		//leaveOneId(str);
-		//filterbyScore(str);
+
     	filterNumber(str);
 		filterbyPosition(ibd, doc);
 		
 		FileManipulator.outputStringList(midResult, System.getProperty("user.dir") + news_path+"_filter.txt");
-		logger.info("Query total time:" + (total_query_time)/1000 + "s, #query times:" + count + ", average:" + (float)(total_query_time/count)/1000 + "s");
-		System.out.println("Query total time:" + (total_query_time)/1000 + "s, #query times:" + count + ", average:" + (float)(total_query_time/count)/1000 + "s");
+		logger.info("Query total time:" + (float)(total_query_time)/1000 + "s, #query times:" + count + ", average:" + (float)(total_query_time/count)/1000 + "s");
+		System.out.println("Query total time:" + (float)(total_query_time)/1000 + "s, #query times:" + count + ", average:" + (float)(total_query_time/count)/1000 + "s");
 		
+		//logger.info(candidateSetMap);
 		return candidateSetMap;
 	}
 	
 	private void insertMention(int begin, int end, String item)
 	{
-		String label = item.split("::=", 2)[0];
-		String value = item.split("::=", 2)[1];
+		String[] tmp = item.split(":::", 3);
+		String label = tmp[0].split("::=", 2)[0];
+		String value = tmp[0].split("::=", 2)[1];
+		String prev_context = tmp[1];
+		String after_context = tmp[2];
+
     	long start1 = 0;
     	long end1 = 0;
     	logger.info(item);
@@ -311,6 +246,9 @@ public class MentionDisambiguation {
     	mention.setLabel(label);
     	mention.setPos_start(begin);
     	mention.setPos_end(end);
+    	mention.setPrev_context(prev_context);
+    	mention.setAfter_context(after_context);
+    	mention.setContext_entity(getNounOfString(prev_context + after_context));
     	CandidateSet cs = new CandidateSet();
     	String[] tmp_c = value.split("::=");
     	for(String ss : tmp_c){
@@ -328,6 +266,24 @@ public class MentionDisambiguation {
 			cs.addElement(id, tmp_e);
     	}
     	candidateSetMap.put(mention, cs);
+	}
+
+	private HashSet<String> getNounOfString(String text){
+		Result text_ansj = NlpAnalysis.parse(text);
+		HashSet<String> noun_list = new HashSet<String>();
+		for(Term item : text_ansj){
+			if(item.getNatureStr().contains("n")){
+				noun_list.add(item.getName());
+			}
+		}
+		//System.out.println(text_ansj.toString());
+		//System.out.println(noun_list);
+		return noun_list;
+	}
+	
+	public static void main(String[] args){
+		MentionDisambiguation ms = new MentionDisambiguation();
+		ms.getNounOfString("本月早些时候，外交部长王毅应约同美国国务卿克里通电话。王毅表示，中美元首即将在杭州举行的会晤是下阶段中美关系的最重要日程。克里表示，美方愿同中方合作，确保Ｇ２０杭州峰会取得圆满成功。");
 	}
 
 }
