@@ -7,6 +7,7 @@ update log:
 - 程序入口：TraditionalRanking.main， 可以使用循环输入再查看日志的方式调试
 - 命名实体部分负责人：hj
 - 实体链接传统方法负责人：zj
+
 ##### 2016-8-31, v1.2
 - 更改了popularity的计算方式
 - 更改了candidate ranking的方式——先进行相关度的排序，再根据popularity(commonness)值进行选取
