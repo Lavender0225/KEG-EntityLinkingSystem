@@ -13,6 +13,6 @@ update log:
 - 更改了candidate ranking的方式——先进行相关度的排序，再根据popularity(commonness)值进行选取
 - 增加了mention prune，去掉置信度比较低的mention
 - P.S. 这一版基本实现了初步的功能，但是还有些可以改进的地方
-		- 建Index过滤实体的时候可以不完全按照类别进行过滤，可以将一个mention对应的popularity值高的保留下来
-		- MentionDiambiguation类中的disambugiation函数调用的toStringWithOutNature函数有时候报数组异常的错误，这个需要解决一下
+	- 建Index过滤实体的时候可以不完全按照类别进行过滤，可以将一个mention对应的popularity值高的保留下来
+	- MentionDiambiguation类中的disambugiation函数调用的toStringWithOutNature函数有时候报数组异常的错误，这个需要解决一下
 	
