@@ -1,8 +1,19 @@
 package CandidateRanking;
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 
@@ -11,8 +22,10 @@ import org.apache.logging.log4j.Logger;
 
 import CandidateGeneration.GenCandidateSet;
 import Common.Constant;
+import Model.AbstractEntity;
 import Model.Candidate;
 import Model.CandidateSet;
+import Model.Entity;
 import Model.Mention;
 import XloreAPI.XloreGetPopularity;
 
@@ -25,6 +38,14 @@ public class TraditionalRanking {
 		logger.info(candidateSetMap.toString());
 		getFeatures();
 		logger.info(candidateSetMap.toString());
+	}
+	public void processing(String doc, String result_path){
+		candidateSetMap = GenCandidateSet.extractMentionForNewsFromString(doc);
+		logger.info(candidateSetMap.toString());
+		getFeatures();
+		logger.info(candidateSetMap.toString());
+		outputResult(doc, result_path);
+		//outputDocWithLink(link_path, doc);
 	}
 	
 	public void getFeatures(){
@@ -118,10 +139,110 @@ public class TraditionalRanking {
 			}
 		}
 		long end = System.currentTimeMillis();
+		candidateSetMap = sortByMentionPos(candidateSetMap, false);
 		System.out.println("Ranking finish!" + " Ranking time:"+ (double)(end-start)/1000);
 		logger.info("Ranking time:"+ (double)(end-start)/1000);
 		
 	}
+	public void outputResult(String doc, String filepath){
+		OutputStream o = null;
+	    try {
+	        o = new FileOutputStream(filepath, true);
+	        @SuppressWarnings("resource")
+	        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(o, "UTF-8"), 512);
+	        Iterator<Entry<Mention,CandidateSet>> entries = candidateSetMap.entrySet().iterator();  
+	        writer.write("\n**************************************************************\n");
+	        writer.write("news content:" + doc + "\n\n");
+	        String doc_with_link = "";
+	        int last_end = 0;
+	        while (entries.hasNext()) {  
+	            Map.Entry<Mention,CandidateSet> entry =  entries.next();  
+	            Mention mention = entry.getKey();  
+	            CandidateSet candidateSet = entry.getValue(); 
+	            Candidate c = candidateSet.getSet().get(mention.getResult_entity_id());
+	            
+	            if (c != null){
+	            	writer.write(mention.getLabel()+ "----" + candidateSet.getSet().get(mention.getResult_entity_id()).getEntity() + "\n");
+	            	doc_with_link += doc.substring(last_end, mention.getPos_end()) + "[http://xlore.org/sigInfo.json?uri=http%3A%2F%2Fxlore.org%2Finstance%2F" + mention.getResult_entity_id() + "]";
+	            	last_end = mention.getPos_end();
+	            } 
+	        }
+	        doc_with_link += doc.substring(last_end, doc.length());
+	        writer.write(doc_with_link + "\n");
+	        logger.info("doc with link:" + doc_with_link + "\n");
+	        
+	    }catch (IOException ioe){
+	        ioe.printStackTrace();
+	    } finally {
+	        try {
+	            if (o != null) {
+	                o.close();
+	                o = null;
+	            }
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	    }
+	}
+	
+	public void outputDocWithLink(String filepath, String doc){
+		OutputStream o = null;
+	    try {
+	        o = new FileOutputStream(filepath, true);
+	        @SuppressWarnings("resource")
+	        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(o, "UTF-8"), 512);
+	        Iterator<Entry<Mention,CandidateSet>> entries = candidateSetMap.entrySet().iterator();  
+	        String doc_with_link = "";
+	        int last_end = 0;
+	        while (entries.hasNext()) {  
+	            Map.Entry<Mention,CandidateSet> entry =  entries.next();  
+	            Mention mention = entry.getKey();  
+	            CandidateSet candidateSet = entry.getValue(); 
+	            Candidate c = candidateSet.getSet().get(mention.getResult_entity_id());
+	            if (c != null){
+	            	doc_with_link += doc.substring(last_end, mention.getPos_end()) + "[http://xlore.org/sigInfo.json?uri=http%3A%2F%2Fxlore.org%2Finstance%2F" + mention.getResult_entity_id() + "]";
+	            	last_end = mention.getPos_end() + 1;
+	            }
+	            
+	        }
+	        writer.write(doc_with_link + "\n");
+	        logger.info("doc with link:" + doc_with_link + "\n");
+	        //writer.write(strbuffer.toString() + "\n");
+	        
+	    }catch (IOException ioe){
+	        ioe.printStackTrace();
+	    } finally {
+	        try {
+	            if (o != null) {
+	                o.close();
+	                o = null;
+	            }
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	    }
+	}
+	
+	public static <K, V extends Comparable<? super V>> HashMap<Mention,CandidateSet> sortByMentionPos(HashMap<Mention,CandidateSet> map , final boolean reverse){
+        List<Map.Entry<Mention,CandidateSet>> list =new LinkedList<>( map.entrySet() );
+        Collections.sort( list, new Comparator<Map.Entry<Mention,CandidateSet>>()
+        {
+            @Override
+            public int compare( Map.Entry<Mention,CandidateSet> o1, Map.Entry<Mention,CandidateSet> o2 )
+            {
+                if (reverse)
+                    return o2.getKey().getPos_end() - o1.getKey().getPos_end();
+                return o1.getKey().getPos_end() - o2.getKey().getPos_end();
+            }
+        } );
+        HashMap<Mention,CandidateSet> result = new LinkedHashMap<>();
+        for (Map.Entry<Mention,CandidateSet> entry : list)
+        {
+            result.put( entry.getKey(), entry.getValue() );
+        }
+        return result;
+    } 
+	
 	public static void main(String[] args) {
 		TraditionalRanking TRtest = new TraditionalRanking();
 		Scanner sc = new Scanner(System.in); 

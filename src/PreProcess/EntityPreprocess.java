@@ -83,6 +83,14 @@ public class EntityPreprocess {
         		writer.write(label.toLowerCase().trim()+value.trim()+"::;"+desc.trim()+"\n");
         		//System.out.println(label.trim()+value.trim()+"::;"+desc.trim());
         	}
+        	else if(line.contains("《") && line.contains("》") && line.lastIndexOf('》') > line.indexOf('《')){  //去中文书名
+        		//System.out.println(line);
+        		String label = line.substring(0, line.indexOf('《'));
+        		String desc = line.substring(line.indexOf('《')+1, line.lastIndexOf('》'));
+        		String value = line.substring(line.lastIndexOf('《')+1);
+        		writer.write(label.toLowerCase().trim()+value.trim()+"::;"+desc.trim()+"\n");
+        		//System.out.println(label.trim()+value.trim()+"::;"+desc.trim());
+        	}
         	else{
         		writer.write(line+"\n");
         	}
@@ -339,7 +347,7 @@ public class EntityPreprocess {
     }
     
     public static void main(String[] args) throws Exception {
-    	EntityFilter.filter(4);
+    	//EntityFilter.filter(4);
     	//formatter(Constant.entity_original_path, Constant.entity_formatted_path);
     	//formatter(Constant.entityCountInput, Constant.entity_formatted_path);
     	System.out.println("#sorted entities: "+EntitySort(Constant.entity_original_path, Constant.entity_formatted_sorted));

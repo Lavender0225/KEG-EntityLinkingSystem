@@ -1,12 +1,12 @@
 package Common;
 
 public class Constant {
-	//public static String entity_original_path = "./etc/entity/xlore.instance.mention.ttl";	// xlore's entity list
-	public static String entity_original_path = "./etc/entity_filter//entities_freq";	// xlore's entity list
+	public static String entity_original_path = "./etc/entity/Mention_Entity_Count.dat";	// xlore's entity list
+	//public static String entity_original_path = "./etc/entity_filter//entities_freq";	// xlore's entity list
 	public static String entity_formatted_path = "./etc/entity/xlore.formatted.entities";  	// formatted entity list
     public static String entity_formatted_sorted = "./etc/entity/xlore.sorted.entities";	// sorted entity after formatting					
     public static String entity_ready_file = "./etc/entity/ready.forInput.entities";		// filtered entity after sorting, is ready to input to adbc
-    public static String entity_trie =  "./etc/trie/entities_freq_180w.trie";
+    public static String entity_trie =  "./etc/trie/entities_freq_203w_9_6_16.trie";
     //public static String entity_trie =  "./etc/entity/entities_freq_trie";
     
     public static String news_path = "/etc/news/news1";		
@@ -29,6 +29,7 @@ public class Constant {
     
     //public static String popularity_path = "./etc/entity/popularity.txt";
     public static String commonness_path = "./etc/entity/commonness.txt";
+    public static String commonness_ready_path = "./etc/entity/commonnessReadyForInput";
     
     // constants of traditional ranking algorithm
     public static double sigma = 0.3;

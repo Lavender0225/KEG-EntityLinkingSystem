@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import Common.Constant;
+import PreProcess.EntityPreprocess;
 
 public class XloreGetPopularity {
 	//private static HashMap<String, Integer> popularityMap = new HashMap<String, Integer>(); // P(e)
@@ -45,22 +46,58 @@ public class XloreGetPopularity {
 	private static void loadCommonnessMap(){
 		InputStream is = null;
 		try {
-		    is = new FileInputStream(Constant.entityCountInput);
+			EntityPreprocess.formatter(Constant.entityCountInput, Constant.commonness_ready_path);
+		    is = new FileInputStream(Constant.commonness_ready_path);
 		    @SuppressWarnings("resource")
 		    BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"), 512);
 		    String line = null;
+		    int repeat = 0;
 		    while((line = reader.readLine())!=null){
 		        line = line.trim();
 		        String[] tmp_list = line.split("::;");
-		        String mention = tmp_list[0].replaceAll("[《》\\[\\]\\(\\)【】\\\"\\“\\”<>]", "");
+		        String mention = tmp_list[0];
 		        String id = tmp_list[1];
 		        Float count = Float.valueOf(tmp_list[2]);
+		        String desc =null;
+		        if(tmp_list.length == 4){
+		        	desc = tmp_list[3];
+		        	id = id + "&&" + desc;
+		        	if(mention.isEmpty()){
+		        		mention = desc;
+		        	}
+		        }
 
 		        if(!commonnessMap.containsKey(mention)){
 		        	commonnessMap.put(mention, new HashMap<String, Float>());
+		        	commonnessMap.get(mention).put(id, count);
 		        	
 		        }
-		        commonnessMap.get(mention).put(id, count);
+		        else{
+		        	String now_id = id.split("&&")[0];
+		        	Iterator<Entry<String, Float>> entries = commonnessMap.get(mention).entrySet().iterator();  
+		        	boolean flag = false;
+		        	while (entries.hasNext()) {  
+		        	    Map.Entry<String, Float> entry =  entries.next();  
+		        	    String key = entry.getKey();  
+		        	    Float value = entry.getValue();
+		        	    String [] tmp = key.split("&&");
+		        	    String id2 = tmp[0];
+//		        	    String desc2 = null;
+//		        	    if(tmp.length > 1){
+//		        	    	desc2 = tmp[1];
+//		        	    }
+		        	    if(id2.compareTo(now_id) == 0){
+		        	    	flag = true;
+		        	    	entry.setValue(value + count);
+		        	    	repeat ++;
+		        	    	
+		        	    }
+		        	} 
+		        	if(flag == false){
+		        		commonnessMap.get(mention).put(id, count);
+		        	}
+		        }
+		        
 		    }
 		    
 		    Iterator<Entry<String, HashMap<String, Float>>> entries = commonnessMap.entrySet().iterator();
@@ -79,11 +116,12 @@ public class XloreGetPopularity {
 			    	entry2.setValue(entry2.getValue()/total_freq);
 			    }
 			}
-		    System.out.println("loading commomnness map finished!");
+		    System.out.println("loading commomnness map finished! Size:" + commonnessMap.size() + ", repeat:" + repeat );
 //		    sortByValue(popularityMap, true);
 //		    System.out.println("sorting finished!");
-		}catch (IOException ioe){
-		    ioe.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} finally {
 		    try {
 		        if (is != null) {
@@ -109,10 +147,7 @@ public class XloreGetPopularity {
 		    String line = null;
 		    while((line = reader.readLine())!=null){
 		        line = line.trim();
-		        String[] tmp_list = line.split("::=");
-		        if(tmp_list.length == 1){
-		        	System.out.println(line);
-		        }
+		        String[] tmp_list = line.split("::;");
 		        String mention = tmp_list[0];
 		        try{
 			        String id = tmp_list[1];
@@ -128,7 +163,7 @@ public class XloreGetPopularity {
 		        }
 		        
 		    }
-		    System.out.println("loading popularity finished!");
+		    System.out.println("loading popularity finished! Size:" + commonnessMap.size() );
 //		    sortByValue(popularityMap, true);
 //		    System.out.println("sorting finished!");
 		}catch (IOException ioe){
@@ -197,6 +232,7 @@ public class XloreGetPopularity {
 	        @SuppressWarnings("resource")
 	        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(o, "UTF-8"), 512);
 	        Iterator<Entry<String, HashMap<String, Float>>> entries = commonnessMap.entrySet().iterator();
+	        System.out.println("writing to file...size: " + commonnessMap.size());
 	        while(entries.hasNext()){
 				Map.Entry<String, HashMap<String, Float>> entry =  entries.next();  
 			    String mention = entry.getKey();  
@@ -206,9 +242,15 @@ public class XloreGetPopularity {
 			    	Map.Entry<String, Float> entry2 = entries2.next();
 			    	String id = entry2.getKey();
 			    	Float p = entry2.getValue();
-			    	writer.write(mention + "::="+ id + "::=" + String.valueOf(p)+"\n");
+			    	if(id.contains("&&")){
+			    		String[] tmp = id.split("&&");
+			    		writer.write(mention + "::;"+ tmp[0] + "::;" + String.valueOf(p) + "::;" + tmp[1] + "\n");
+			    	}
+			    	else{
+			    		writer.write(mention + "::;"+ id + "::;" + String.valueOf(p) + "\n");
+			    	}
 			    }
-			}
+			}System.out.println("writing to file finished. " );
 	    }catch (IOException ioe){
 	        ioe.printStackTrace();
 	    } finally {

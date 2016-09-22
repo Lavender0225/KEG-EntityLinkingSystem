@@ -223,8 +223,10 @@ public class MentionDisambiguation {
 		filterbyPosition(ibd, doc);
 		
 		FileManipulator.outputStringList(midResult, System.getProperty("user.dir") + news_path+"_filter.txt");
-		logger.info("Query total time:" + (float)(total_query_time)/1000 + "s, #query times:" + count + ", average:" + (float)(total_query_time/count)/1000 + "s");
-		System.out.println("Query total time:" + (float)(total_query_time)/1000 + "s, #query times:" + count + ", average:" + (float)(total_query_time/count)/1000 + "s");
+		if(count != 0){
+			logger.info("Query total time:" + (float)(total_query_time)/1000 + "s, #query times:" + count + ", average:" + (float)(total_query_time/count)/1000 + "s");
+			System.out.println("Query total time:" + (float)(total_query_time)/1000 + "s, #query times:" + count + ", average:" + (float)(total_query_time/count)/1000 + "s");
+		}
 		
 		//logger.info(candidateSetMap);
 		return candidateSetMap;
