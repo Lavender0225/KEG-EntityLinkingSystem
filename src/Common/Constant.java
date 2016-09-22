@@ -17,6 +17,7 @@ public class Constant {
   	
   	public static String freqConceptPath = "./etc/concept/concepts_freq";//freq_concepts
   	public static String freqLabelInput = "./etc/label/labels_freq";//freq_labels
+  	public static String stopConceptPath = "./etc/concept/concepts_stop";//freq_concepts
   	
   	public static String freqEntityPath = "./etc/entity_filter/entities_freq";   //freq_entities
   	public static String commonEntityPath = "./etc/entity_filter/entities_common";//common_entities
