@@ -119,8 +119,17 @@ public class EntityFilter
 		while((line=reader.readLine())!=null)
 		{
 			tmp = line.split("::;");
-			if(freqEntities.contains(tmp[1]))  
+			if(tmp.length < 2)
 			{
+				//System.out.println(line);
+			}
+			//else if(freqEntities.contains(tmp[1]) || (Double.parseDouble(tmp[2]) > 0.8 && Double.parseDouble(tmp[2]) < 1.0))
+			else if(freqEntities.contains(tmp[1]))
+			{
+				if(tmp[1].equals("36703"))
+				{
+					System.out.println(line);
+				}
 				w_freq.write(line+"\n");
 				//System.out.println(line);
 			} 
@@ -236,7 +245,7 @@ public class EntityFilter
 	}
 
 	private void loadStopConcepts() throws IOException{
-		BufferedReader reader = new BufferedReader(new FileReader("./etc/concept/concepts_stop"));
+		BufferedReader reader = new BufferedReader(new FileReader(Constant.stopConceptPath));
 		String line = null;
 		while((line=reader.readLine())!=null)
 		{

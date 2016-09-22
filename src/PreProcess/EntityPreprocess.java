@@ -83,7 +83,7 @@ public class EntityPreprocess {
         		writer.write(label.toLowerCase().trim()+value.trim()+"::;"+desc.trim()+"\n");
         		//System.out.println(label.trim()+value.trim()+"::;"+desc.trim());
         	}
-        	else if(line.contains("《") && line.contains("》") && line.lastIndexOf('》') > line.indexOf('《')){  //去中文书名
+			else if(line.contains("《") && line.contains("》") && line.lastIndexOf('》') > line.indexOf('《')){  //去中文书名
         		//System.out.println(line);
         		String label = line.substring(0, line.indexOf('《'));
         		String desc = line.substring(line.indexOf('《')+1, line.lastIndexOf('》'));
@@ -139,7 +139,7 @@ public class EntityPreprocess {
             		int t=0;
             		for(t=0; t<idList.length; t++){
             			if(idList[t].split("::;")[0].compareTo(uri_des[0]) == 0){   //找到编号相同则popularity相加再退出
-            				int tp = Integer.parseInt(idList[t].split("::;")[1])+Integer.parseInt(uri_des[1]);
+            				double tp = Double.parseDouble(idList[t].split("::;")[1])+Double.parseDouble(uri_des[1]);
             				String uri = "";
             				for(int m=0; m<idList.length; m++)
             				{
@@ -214,18 +214,18 @@ public class EntityPreprocess {
             }
             	
             else{
-            	String idStr = entityMap.get(items[0]);    //已有的uri列表    6160344::;3::=261317::;1
             	items = line.split("::=");
             	int i=0;
             	for(i=1; i<items.length; i++)
             	{
             		String[] uri_des = items[i].split("::;");   //待处理的uri
+            		String idStr = entityMap.get(items[0]);    //已有的uri列表    6160344::;3::=261317::;1
                 	if(idStr.contains("::=")){
                 		String[] idList = idStr.split("::="); 
                 		int t=0;
                 		for(t=0; t<idList.length; t++){
                 			if(idList[t].split("::;")[0].compareTo(uri_des[0]) == 0){   //找到编号相同则popularity相加再退出
-                				int tp = Integer.parseInt(idList[t].split("::;")[1])+Integer.parseInt(uri_des[1]);
+                				double tp = Double.parseDouble(idList[t].split("::;")[1])+Double.parseDouble(uri_des[1]);
                 				String uri = "";
                 				for(int m=0; m<idList.length; m++)
                 				{
@@ -240,6 +240,7 @@ public class EntityPreprocess {
                 					uri += idList[m];
                 				}
                 				entityMap.put(items[0], uri);
+                				
                 				break;
                 			}
                 		}
@@ -350,8 +351,9 @@ public class EntityPreprocess {
     	//EntityFilter.filter(4);
     	//formatter(Constant.entity_original_path, Constant.entity_formatted_path);
     	//formatter(Constant.entityCountInput, Constant.entity_formatted_path);
-    	System.out.println("#sorted entities: "+EntitySort(Constant.entity_original_path, Constant.entity_formatted_sorted));
-    	filter(Constant.entity_formatted_sorted, Constant.entity_ready_file);
+    	//System.out.println("#sorted entities: "+EntitySort(Constant.entity_original_path, Constant.entity_formatted_sorted));
+    	//formatter(Constant.entity_original_path, Constant.entity_formatted_path);
+    	//filter(Constant.entity_formatted_sorted, Constant.entity_ready_file);
     	
     	
     	//将多个领域的实体集放到entity_original_path中，然后去掉重复的
@@ -359,7 +361,7 @@ public class EntityPreprocess {
     	
     	//partition(1250547,"./etc/entity_filter/entities_freq","./etc/entity/人物");
     	
-//    	partition(4000000, Constant.entity_file, Constant.entity_file+"_1");
+    	//partition(40000, "./etc/entity/commonness.txt", "./etc/entity/coutformat");
 //    	System.out.println("partition finished!");
     }
 }
