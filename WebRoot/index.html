@@ -1,0 +1,133 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    
+    <title>KEG-EntityLinking</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta http-equiv="pragma" content="no-cache">
+	<meta http-equiv="cache-control" content="no-cache">
+	<meta http-equiv="expires" content="0">    
+	<meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
+	<meta http-equiv="description" content="Entity linking system producted by KEG">
+	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="js/jquery-2.2.3.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    
+	<!--
+	<link rel="stylesheet" type="text/css" href="styles.css">
+	-->
+		<script type="text/javascript">
+		var XHR = false;
+		function CreateXHR(){
+			try{
+				XHR = new ActiveXObject("msxml2.XMLHTTP");
+			}catch(e1){
+				try{
+					XHR = new ActiveObject("microsoft.XMLHTTP");
+				}catch(e2){
+					try{
+						XHR = new XMLHttpRequest();
+					}catch(e3){
+						XHR = false;
+					}
+				}
+			}
+		}
+		
+		function sendRequest(){
+			CreateXHR();
+			if(XHR){
+				var text = document.getElementById("text").value;
+				var uri = "http://10.1.1.68:8080/EntityLinkingWeb/linkingSubmit.action?text=" + text;
+				console.log("text:" + text);
+				console.log("uri:" + uri);
+				XHR.open("GET", uri, true);
+				XHR.onreadystatechange = resultHander;
+				XHR.send(null);
+			}
+		}
+		function resultHander(){
+			if(XHR.readyState == 4 && XHR.status == 200){
+				console.log(XHR.response);
+            	console.log(XHR.responseText);
+				var userObj = JSON.parse(XHR.responseText);
+				var resultObj = userObj.ResultList;
+				var text = String(userObj.Text);
+				var myText = text;
+				for(var i=0;i<resultObj.length;i++){
+					//myText = mytext.substring(0, resultObj[i]["start"]) + resultObj[i]["label"].link(resultObj[i]["url"]) + text.substr(resultObj[i]["end"] + 1);
+					myText = myText.replace(resultObj[i]["label"], resultObj[i]["label"].link(resultObj[i]["url"]));
+				}
+				
+				var myTable = "<table>";
+				myTable += "<tr><td>label</td><td>start</td><td>end</td>><td>url</td><td>Cohenrence</td><td>Popularity</td></tr>"; 
+				var myTable= "<table><tr><td><b>Label</b></td>";
+   				myTable+= "<td style='width: 100px; text-align: right;'><b>Position</b></td>";
+    			myTable+= "<td style='width: 300px; text-align: right;'><b>URL</b></td>";
+    			myTable+= "<td style='width: 150px; text-align: right;'><b>Coherence</b></td>";
+    			myTable+= "<td style='width: 150px; text-align: right;'><b>Popularity</b></td></tr>";
+
+    			myTable+="<tr><td 										  >---------------</td>";
+    			myTable+="<td     style='width: 100px; text-align: right;'>---------------</td>";
+    			myTable+="<td     style='width: 300px; text-align: right;'>---------------</td>";
+    			myTable+="<td     style='width: 150px; text-align: right;'>---------------</td>";
+    			myTable+="<td     style='width: 150px; text-align: right;'>---------------</td></tr>";
+				for(var i=0;i<resultObj.length;i++)
+				{
+				    myTable += "<tr>";
+				    myTable += "<td>"+resultObj[i]["label"]+"</td>";
+				    myTable += "<td style='width: 100px; text-align: right;'>"+resultObj[i]["start_index"] + " - " + resultObj[i]["end_index"] +"</td>";
+				    myTable += "<td style='width: 300px;text-align: right;'>"+resultObj[i]["url"].link(resultObj[i]["url"])+"</td>";
+				    myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["cohenrence_score"].toFixed(4)+"</td>";
+				    myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["popularity_score"].toFixed(4)+"</td>";
+				    myTable += "<tr>";		  
+				}
+				myTable += "</table>";
+				document.getElementById('textShow').innerHTML = myText;
+				document.getElementById('jsonShow').innerHTML = myTable;
+				
+			}
+		}
+		</script>
+  </head>
+  
+  <body>
+  	<div class="container-fluid">
+	<div class="row-fluid">
+		<div class="span12">
+			<h2 class="text-left">
+				<em>KEG Entity Linking System</em>
+			</h2>
+			<hr class="text-center" />
+			<p class="text-center"></p>
+			<div class="row-fluid">
+				<div class="span6">
+					<fieldset>
+						<div class="form-group">
+							<textarea cols="80" id="text" rows="6">
+							</textarea>
+						</div> <button type="submit" onclick="sendRequest();">提交</button>
+					</fieldset>
+				</div>
+				<div class="span6">
+					<h3>
+						<em>结果</em>
+					</h3>
+					<p id="textShow" style="width: 600px; ">
+					<p id="jsonShow">
+					</p>
+				</div>
+				
+				
+			</div>
+		</div>
+	</div>
+	</div>
+	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+  </body>
+</html>
