@@ -16,3 +16,6 @@ update log:
 	- 建Index过滤实体的时候可以不完全按照类别进行过滤，可以将一个mention对应的popularity值高的保留下来
 	- MentionDiambiguation类中的disambugiation函数调用的toStringWithOutNature函数有时候报数组异常的错误，这个需要解决一下
 	
+##### 2016-12-23, v2.0
+- web版本(实验室局域网访问)
+- 加入百度百科的实体向量计算coherence
