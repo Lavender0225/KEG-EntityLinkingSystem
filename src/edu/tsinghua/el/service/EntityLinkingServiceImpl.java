@@ -32,10 +32,13 @@ public class EntityLinkingServiceImpl implements EntityLinkingService{
                 result.setStart_index(mention.getPos_start());
                 result.setEnd_index(mention.getPos_end());
                 result.setEntity_id(mention.getResult_entity_id());
-                result.setCohenrence_score(candidate.getCohenrence_score());
+                result.setCoherence_score(candidate.getCoherence_score());
                 result.setPopularity_score(candidate.getPopularity());
+                result.setRelatedness_score(candidate.getReletedness());
                 result.setUrl(Constant.xlore_entity_prefix + mention.getResult_entity_id());
+                result.setLink_prob(mention.getLink_prob());
                 resultList.add(result);
+               
             }
             
         }

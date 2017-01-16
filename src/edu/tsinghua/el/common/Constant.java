@@ -32,13 +32,19 @@ public class Constant {
     public static String commonness_path = "/home/zj/EntityLinkingWeb/etc/entity/commonness.txt";
     public static String commonness_ready_path = "/home/zj/EntityLinkingWeb/etc/entity/commonnessReadyForInput";
     
+    // linkprob file path
+    public static String linkProbPath = "/home/zj/EntityLinkingWeb/etc/entity/link_prob.dat";
+    
     // constants of traditional ranking algorithm
-    public static double sigma = 0.3;
-    public static double t = 0.01;
+    public static double sigma = 0.4;
+    public static double t = 0.02;
     
     
     // path of vector models
     public static String words_model_path = "/home/zj/EntityLinkingWeb/etc/vec_model/vectors_word_baidu";
     public static String entity_model_path = "/home/zj/EntityLinkingWeb/etc/vec_model/vectors_entity_baidu";
     public static String baidu_xlore_map_path = "/home/zj/EntityLinkingWeb/etc/vec_model/baidu-xlore.map";
+    
+    //wp regex
+    public static String wpRegex = "[——\\-_<>《》?？/、，,。\\.‘\'；;：:“\"\\{\\}\\*&#\\^@\\$\\(\\)（）【】\\[\\]\\+!！\n\r]+";
 }

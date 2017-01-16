@@ -51,16 +51,16 @@ public class CandidateSet {
             public int compare( Map.Entry<String, Candidate> o1, Map.Entry<String, Candidate> o2 )
             {
                 if (reverse){
-                	if(o1.getValue().getScore() < o2.getValue().getScore())
+                	if(o1.getValue().getReletedness() < o2.getValue().getReletedness())
                 		return 1;
-                	else if(o1.getValue().getScore() >o2.getValue().getScore())
+                	else if(o1.getValue().getReletedness() >o2.getValue().getReletedness())
                 		return -1;
                 	return 0;
                 }
                 else{
-                	if(o1.getValue().getScore() > o2.getValue().getScore())
+                	if(o1.getValue().getReletedness() > o2.getValue().getReletedness())
                 		return 1;
-                	else if(o1.getValue().getScore() < o2.getValue().getScore())
+                	else if(o1.getValue().getReletedness() < o2.getValue().getReletedness())
                 		return -1;
                 	return 0;
                 }
@@ -79,7 +79,7 @@ public class CandidateSet {
 		for(Candidate e : set.values()){
 			str += "\t"+ e.toString() + "\n";
 		}
-		str += "\n";
+		str += "]\n";
 		return str;
 	}
 	

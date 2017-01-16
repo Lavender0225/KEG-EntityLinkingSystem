@@ -294,10 +294,10 @@ public class XloreGetPopularity {
 			if(commonnessMap.size() == 0){
 				loadPopularityMap();
 			}
-			if(commonnessMap.containsKey(mention)){
+			if(commonnessMap.containsKey(mention.toLowerCase())){
 				if(commonnessMap.get(mention).containsKey(id)){
 					//System.out.println("get the commonness of " + mention + "&&" + id + ": "+ String.valueOf(commonnessMap.get(mention).get(id) + ", "+commonnessMap.get(mention)));
-					return (double)commonnessMap.get(mention).get(id);
+					return (double)commonnessMap.get(mention.toLowerCase()).get(id);
 				}
 			}
 			return 0;

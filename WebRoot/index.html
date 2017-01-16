@@ -40,7 +40,8 @@
 			CreateXHR();
 			if(XHR){
 				var text = document.getElementById("text").value;
-				var uri = "http://10.1.1.68:8080/EntityLinkingWeb/linkingSubmit.action?text=" + text;
+				text = text.replace(/&/g, " ");
+				var uri = "http://10.1.1.68:8080/EntityLinkingWeb/linkingSubmit.action?text=" + encodeURI(text);
 				console.log("text:" + text);
 				console.log("uri:" + uri);
 				XHR.open("GET", uri, true);
@@ -58,20 +59,25 @@
 				var myText = text;
 				for(var i=0;i<resultObj.length;i++){
 					//myText = mytext.substring(0, resultObj[i]["start"]) + resultObj[i]["label"].link(resultObj[i]["url"]) + text.substr(resultObj[i]["end"] + 1);
-					myText = myText.replace(resultObj[i]["label"], resultObj[i]["label"].link(resultObj[i]["url"]));
+					myText = myText.replace(new RegExp(resultObj[i]["label"], "gm"), resultObj[i]["label"].link(resultObj[i]["url"]));
 				}
 				
 				var myTable = "<table>";
-				myTable += "<tr><td>label</td><td>start</td><td>end</td>><td>url</td><td>Cohenrence</td><td>Popularity</td></tr>"; 
+				myTable += "<tr><td>label</td><td>start</td><td>end</td>><td>url</td><td>Relatedness</td><td>Popularity</td><td>Coherence</td><td>Link Probability</td></tr>"; 
 				var myTable= "<table><tr><td><b>Label</b></td>";
    				myTable+= "<td style='width: 100px; text-align: right;'><b>Position</b></td>";
     			myTable+= "<td style='width: 300px; text-align: right;'><b>URL</b></td>";
+    			myTable+= "<td style='width: 150px; text-align: right;'><b>Relatedness</b></td>";
+    			myTable+= "<td style='width: 150px; text-align: right;'><b>Popularity</b></td>";
     			myTable+= "<td style='width: 150px; text-align: right;'><b>Coherence</b></td>";
-    			myTable+= "<td style='width: 150px; text-align: right;'><b>Popularity</b></td></tr>";
+    			myTable+= "<td style='width: 150px; text-align: right;'><b>Link Probability</b></td>";
+    			myTable+= "</tr>";
 
     			myTable+="<tr><td 										  >---------------</td>";
     			myTable+="<td     style='width: 100px; text-align: right;'>---------------</td>";
     			myTable+="<td     style='width: 300px; text-align: right;'>---------------</td>";
+    			myTable+="<td     style='width: 150px; text-align: right;'>---------------</td>";
+    			myTable+="<td     style='width: 150px; text-align: right;'>---------------</td>";
     			myTable+="<td     style='width: 150px; text-align: right;'>---------------</td>";
     			myTable+="<td     style='width: 150px; text-align: right;'>---------------</td></tr>";
 				for(var i=0;i<resultObj.length;i++)
@@ -80,8 +86,10 @@
 				    myTable += "<td>"+resultObj[i]["label"]+"</td>";
 				    myTable += "<td style='width: 100px; text-align: right;'>"+resultObj[i]["start_index"] + " - " + resultObj[i]["end_index"] +"</td>";
 				    myTable += "<td style='width: 300px;text-align: right;'>"+resultObj[i]["url"].link(resultObj[i]["url"])+"</td>";
-				    myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["cohenrence_score"].toFixed(4)+"</td>";
+				    myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["relatedness_score"].toFixed(4)+"</td>";
 				    myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["popularity_score"].toFixed(4)+"</td>";
+				    myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["coherence_score"].toFixed(4)+"</td>";
+				    myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["link_prob"].toFixed(4)+"</td>";
 				    myTable += "<tr>";		  
 				}
 				myTable += "</table>";

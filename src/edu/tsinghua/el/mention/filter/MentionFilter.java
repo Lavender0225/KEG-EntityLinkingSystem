@@ -21,11 +21,12 @@ import org.apache.logging.log4j.Logger;
 
 
 import edu.tsinghua.el.common.Constant;
-import edu.tsinghua.el.common.FileManipulator;
 import edu.tsinghua.el.index.AhoCorasickDoubleArrayTrie;
 import edu.tsinghua.el.index.IndexBuilder;
 
 public class MentionFilter {
+	private String doc = "";
+	private Result ansj_result = null;
 	private List<String> extractResult = new ArrayList<String>();
 	private List<String> midResult = new ArrayList<String>();
 	private HashMap<String, Integer> timeMap = new HashMap<String, Integer>();  //label   score
@@ -40,6 +41,12 @@ public class MentionFilter {
 	int count = 0;
 	long total_query_time = 0;
 	public static final Logger logger = LogManager.getLogger();
+	
+	public MentionFilter(String doc){
+		this.doc = doc;
+		this.ansj_result = NlpAnalysis.parse(doc);
+		filterWp();
+	}
 	
 	private int selectByMaxLength(List<String> result)
 	{
@@ -59,13 +66,13 @@ public class MentionFilter {
 	private void filterNumberAndVerb(List<String> str, String doc)  //去掉数字，日期，时间
 	{
 		midResult.clear();
-		HashSet<String> verbList = getVerbOfString(doc);
+		HashSet<String> verbList = getVerbOfDoc();
 		logger.info("verb list:" + verbList);
 		for(int i=0; i<str.size(); i++)
 		{
 			String[] strsplit = str.get(i).split("::=");
-			Pattern pattern = Pattern.compile("[[0-9]+[年|月|日|时|分|秒]*]+"); 
-			if(!pattern.matcher(strsplit[0]).matches() && !verbList.contains(strsplit[0]) )//不是数字且不是动词
+			Pattern pattern = Pattern.compile("[[0-9今昨明后前本上]+[年|月|日|时|分|秒]*]+"); 
+			if(!pattern.matcher(strsplit[0]).matches() && !verbList.contains(strsplit[0]) )//不是数字、日期且不是动词
 			{
 				System.out.println(str.get(i));
 				midResult.add(str.get(i));
@@ -165,7 +172,7 @@ public class MentionFilter {
 		}
 	}
 	
-	public HashMap<Mention,CandidateSet> disambiguating(IndexBuilder ibd, String doc) throws IOException
+	public HashMap<Mention,CandidateSet> disambiguating(IndexBuilder ibd) throws IOException
 	{
 		//System.out.println(NlpAnalysis.parse("奥巴马"));
 		String extract = NlpAnalysis.parse(doc).toStringWithOutNature("&&");
@@ -291,10 +298,9 @@ public class MentionFilter {
 		return noun_list;
 	}
 	
-	private HashSet<String> getVerbOfString(String text){
-		Result text_ansj = NlpAnalysis.parse(text);
+	private HashSet<String> getVerbOfDoc(){
 		HashSet<String> verb_list = new HashSet<String>();
-		for(Term item : text_ansj){
+		for(Term item : ansj_result){
 			if(item.getNatureStr().contentEquals("v")){
 				verb_list.add(item.getName());
 			}
@@ -304,10 +310,9 @@ public class MentionFilter {
 		return verb_list;
 	}
 	
-	private HashSet<String> getAdjectiveOfString(String text){
-		Result text_ansj = NlpAnalysis.parse(text);
+	private HashSet<String> getAdjectiveOfDoc(){
 		HashSet<String> adj_list = new HashSet<String>();
-		for(Term item : text_ansj){
+		for(Term item : ansj_result){
 			if(item.getNatureStr().contentEquals("a")){
 				adj_list.add(item.getName());
 			}
@@ -317,9 +322,27 @@ public class MentionFilter {
 		return adj_list;
 	}
 	
+	public void filterWp(){
+		doc = doc.replaceAll(Constant.wpRegex, " ");
+	}
+	
+	public String getDoc() {
+		return doc;
+	}
+
+	public void setDoc(String doc) {
+		this.doc = doc;
+	}
+
 	public static void main(String[] args){
-		MentionFilter ms = new MentionFilter();
-		ms.getVerbOfString("习近平对美国进行国事访问");
-		ms.getVerbOfString("本月早些时候，外交部长王毅应约同美国国务卿克里通电话。王毅表示，中美元首即将在杭州举行的会晤是下阶段中美关系的最重要日程。克里表示，美方愿同中方合作，确保Ｇ２０杭州峰会取得圆满成功。");
+		String doc = "本月早些时候，外交部长王毅应约同美国国务卿克里通电话。王毅表示，中美元首即将在杭州举行的会晤是下阶段中美关系的最重要日程。克里表示，美方愿同中方合作，确保Ｇ２０杭州峰会取得圆满成功。——《》}}}}}}"
+				+ ""
+				+ ""
+				+ "&*3#，？：";
+		MentionFilter ms = new MentionFilter(doc);
+		ms.getVerbOfDoc();
+		ms.getVerbOfDoc();
+		ms.filterWp();
+		System.out.println(ms.getDoc());
 	}
 }

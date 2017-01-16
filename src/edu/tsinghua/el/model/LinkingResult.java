@@ -6,8 +6,10 @@ public class LinkingResult {
 	private String label;
 	private String entity_id;
 	private String url;
-	private double cohenrence_score;
+	private double coherence_score;
 	private double popularity_score;
+	private double relatedness_score;
+	private double link_prob;
 	
 	public int getStart_index() {
 		return start_index;
@@ -41,11 +43,11 @@ public class LinkingResult {
 	public void setEntity_id(String entity_id) {
 		this.entity_id = entity_id;
 	}
-	public double getCohenrence_score() {
-		return cohenrence_score;
+	public double getCoherence_score() {
+		return coherence_score;
 	}
-	public void setCohenrence_score(double cohenrence_score) {
-		this.cohenrence_score = cohenrence_score;
+	public void setCoherence_score(double coherence_score) {
+		this.coherence_score = coherence_score;
 	}
 	public double getPopularity_score() {
 		return popularity_score;
@@ -53,13 +55,31 @@ public class LinkingResult {
 	public void setPopularity_score(double popularity_score) {
 		this.popularity_score = popularity_score;
 	}
+	
+	public double getRelatedness_score() {
+		return relatedness_score;
+	}
+	public void setRelatedness_score(double relatedness_score) {
+		this.relatedness_score = relatedness_score;
+	}
+	
+	
+	public double getLink_prob() {
+		return link_prob;
+	}
+	public void setLink_prob(double link_prob) {
+		this.link_prob = link_prob;
+	}
+	
 	@Override
 	public String toString() {
 		return "LinkingResult [start_index=" + start_index + ", end_index="
 				+ end_index + ", label=" + label + ", entity_id=" + entity_id
-				+ ", url=" + url + ", cohenrence_score=" + cohenrence_score
-				+ ", popularity_score=" + popularity_score + "]";
+				+ ", url=" + url + ", coherence_score=" + coherence_score
+				+ ", popularity_score=" + popularity_score
+				+ ", relatedness_score=" + relatedness_score + "]";
 	}
+	
 	
 	
 	

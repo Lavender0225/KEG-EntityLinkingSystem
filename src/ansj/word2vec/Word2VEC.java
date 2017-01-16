@@ -34,7 +34,7 @@ public class Word2VEC {
 	public static String words_model_path = Constant.words_model_path;
 	public static String entity_model_path = Constant.entity_model_path;
 	public static String baidu_xlore_map_path = Constant.baidu_xlore_map_path;
-	public static HashMap<String, String> baiduXloreMap = new HashMap<String, String>();
+	public static HashMap<String, String> baiduXloreMap = new HashMap<String, String>();	//key:xlore_instance_id, value:baidu_id
 	private HashMap<String, float[]> wordMap = null;
 	private HashMap<String, float[]> entityMap = null;
 	private int words;

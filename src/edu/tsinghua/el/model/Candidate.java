@@ -12,11 +12,12 @@ public class Candidate {
 	private double sim_summary;
 	private double sim_label_context;
 	
-	private double popularity;				// P(entity)
+	private double popularity;				// P(entity|mention)
 	private double cohenrence_score;
 	
-	private double score;
 	private double reletedness;
+	
+	private double link_prob;
 	
 	
 	public Candidate(){
@@ -25,7 +26,7 @@ public class Candidate {
 		sim_context_entity = 0;
 		sim_summary = 0;
 		sim_label_context = 0;
-		score = 0;
+		reletedness = 0;
 		label_contains = 0;
 		sim_desc = 0;
 		cohenrence_score = 0;
@@ -112,7 +113,7 @@ public class Candidate {
 	}
 	
 	
-	public double getCohenrence_score() {
+	public double getCoherence_score() {
 		return cohenrence_score;
 	}
 
@@ -120,18 +121,18 @@ public class Candidate {
 		this.cohenrence_score = cohenrence_score;
 	}
 
-	public double getScore() {
-		return score;
+	public double getReletedness() {
+		return reletedness;
 	}
 
-	public void setScore(double sim_score) {
-		this.score = sim_score;
+	public void setReletedness(double reletedness) {
+		this.reletedness = reletedness;
 	}
 
 	@Override
 	public String toString() {
 		return "Candidate ["
-				+ "sim_score=" + score
+				+ "reletedness=" + reletedness
 				+ ", label_edit_distance="+ label_edit_distance 
 				+ ", popularity=" + popularity
 				+ ", cohenrence=" + cohenrence_score
@@ -140,7 +141,7 @@ public class Candidate {
 				//+ ", sim_desc=" + sim_desc
 				//+ ", sim_context_entity=" + sim_context_entity + ", sim_summary="
 				//+ sim_summary + ", sim_label_context=" + sim_label_context
-				+ "entity=" + entity 
+				+ ", entity=" + entity 
 				+ "]";
 	}
 

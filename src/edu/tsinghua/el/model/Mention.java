@@ -12,6 +12,7 @@ public class Mention {
     private String uris;
     private String result_entity_id;
     private HashSet<String> context_entity;
+    private double link_prob;
 
     public Mention(){
     	context_entity = new HashSet<String>();
@@ -81,6 +82,16 @@ public class Mention {
 
 	public void setContext_entity(HashSet<String> context_entity) {
 		this.context_entity = context_entity;
+	}
+	
+	
+
+	public double getLink_prob() {
+		return link_prob;
+	}
+
+	public void setLink_prob(double link_prob) {
+		this.link_prob = link_prob;
 	}
 
 	@Override

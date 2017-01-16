@@ -13,7 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import edu.tsinghua.el.common.Constant;
-
+import edu.tsinghua.el.common.PropertiesReader;
 import edu.tsinghua.el.index.IndexBuilder;
 
 public class CandidateGeneration {
@@ -28,7 +28,7 @@ public class CandidateGeneration {
 	 * @param news_path, news的存储路径
 	 */
 	private static void chooseIndex(){
-		ibd = IndexBuilder.getInstance(Constant.entity_ready_file, Constant.entity_trie);
+		ibd = IndexBuilder.getInstance(Constant.entity_ready_file, PropertiesReader.getTriePath());
 	}
 	
 	@SuppressWarnings("resource")
@@ -44,9 +44,9 @@ public class CandidateGeneration {
 	    	}
 	    	String doc = sb.toString().toLowerCase();
 	    	
-	    	MentionFilter handle = new MentionFilter();
+	    	MentionFilter handle = new MentionFilter(doc);
 	        //消歧后
-	    	candidateSetMap = handle.disambiguating(ibd, doc);
+	    	candidateSetMap = handle.disambiguating(ibd);
 	    	
 	    	
 		} catch (IOException e) {
@@ -60,11 +60,11 @@ public class CandidateGeneration {
 	public static HashMap<Mention, CandidateSet> extractMentionForNewsFromString(String doc){
 		chooseIndex();
 		doc = doc.toLowerCase();
-		MentionFilter handle = new MentionFilter();
+		MentionFilter handle = new MentionFilter(doc);
         //消歧后
     	try {
     		//logger.info(doc);
-			candidateSetMap = handle.disambiguating(ibd, doc);
+			candidateSetMap = handle.disambiguating(ibd);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
