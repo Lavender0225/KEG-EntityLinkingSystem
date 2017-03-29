@@ -3,6 +3,8 @@ package edu.tsinghua.el.model;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import edu.tsinghua.el.common.Constant;
+
 public class Entity extends AbstractEntity{
 	private String uri;
 	private ArrayList<String> alias;
@@ -20,12 +22,11 @@ public class Entity extends AbstractEntity{
 	
 
 
-	public Entity(String id, String uri, String label_zh, String label_en, ArrayList<String> alias, 
+	public Entity(String id, String label_zh, String label_en, ArrayList<String> alias, 
 			String abstract_en, String abstract_zh, ArrayList<String> super_classes_en, ArrayList<String> super_classes_zh,
 			ArrayList<String> related_entites_zh, ArrayList<String> related_entites_en,
 			HashMap<String, String> infobox_zh, HashMap<String, String> infobox_en) {
 		super(id);
-		this.uri = uri;
 		this.label_zh = label_zh;
 		this.label_en = label_en;
 		this.alias = alias;
@@ -46,6 +47,7 @@ public class Entity extends AbstractEntity{
 		this.infobox_zh = infobox_zh;
 		this.setInfobox_en(infobox_en);
 		this.desc = "";
+		this.uri = Constant.xlore_entity_prefix + id;
 	}
 
 

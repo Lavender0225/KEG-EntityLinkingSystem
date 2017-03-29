@@ -35,7 +35,8 @@ public class TraditionalRanking {
 	private static HashMap<Mention,CandidateSet> candidateSetMap = null;
 	private static Word2VEC vec_model = Word2VEC.getInstance();
 	private static HashMap<String, Float> coherenceMap = new HashMap<String, Float>();
-	private static double avg_coherence = 0;
+	private static double avg_coherence = 0;		// calculated in calCoherence()
+	private static double avg_link_prob = 0;		// calculated in calCoherence()
 	private static final Logger logger = LogManager.getLogger(TraditionalRanking.class);
 	
 	public static void processing(String doc){
@@ -47,7 +48,7 @@ public class TraditionalRanking {
 		prune();
 		logger.info(candidateSetMap.toString());
 	}
-	public void processing(String doc, String result_path){
+	public void processing(String domainName, String doc, String result_path){
 		candidateSetMap = CandidateGeneration.extractMentionForNewsFromString(doc);
 		//ogger.info(candidateSetMap.toString());
 		ranking();
@@ -87,7 +88,7 @@ public class TraditionalRanking {
 			entries2 = candidateSet.getSet().entrySet().iterator();
 			double max_score = -1;
 			while(entries2.hasNext()){	
-				Entry<String, Candidate> entry2 = entries2.next();
+				Entry<String, Candidate> entry2 = entries2.next();	
 				String entity_id = entry2.getKey();
 				Candidate candidate = entry2.getValue();
 				
@@ -146,30 +147,36 @@ public class TraditionalRanking {
 	
 	/**
 	 * prune
-	 * strategy: calculate every entity's coherence + linkProb, if the coherence score is lower than average_coherence, then remove it.
+	 * strategy: 1） if the coherence score is lower than average_coherence, then remove it.
+	 * 				2） if the link probability is lower than average_cohenrence/10, then remove it
 	 */
 	public static void prune(){
 		Iterator<Entry<Mention, CandidateSet>> entries = candidateSetMap.entrySet().iterator();
 		while(entries.hasNext()){
 			Entry<Mention, CandidateSet> entry = entries.next();
 			Mention mention = entry.getKey();
-			CandidateSet candidateSet = entry.getValue();
-			Iterator<Entry<String, Candidate>> entries2 = candidateSet.getSet().entrySet().iterator();
-			while(entries2.hasNext()){
-				Entry<String, Candidate> entry2 = entries2.next();
-				String entity_id = entry2.getKey();
-				Candidate candidate = entry2.getValue();
-				// get coherence
-				double coherence_score = coherenceMap.get(entity_id);
-				if(coherence_score < avg_coherence){
-					if(mention.getResult_entity_id() != null && entity_id.contentEquals(mention.getResult_entity_id())){
-						mention.setResult_entity_id(null);
+			if(mention.getLink_prob() < avg_link_prob/10){
+				entries.remove();
+			}
+			else{
+				CandidateSet candidateSet = entry.getValue();
+				Iterator<Entry<String, Candidate>> entries2 = candidateSet.getSet().entrySet().iterator();
+				while(entries2.hasNext()){
+					Entry<String, Candidate> entry2 = entries2.next();
+					String entity_id = entry2.getKey();
+					Candidate candidate = entry2.getValue();
+					// get coherence
+					double coherence_score = coherenceMap.get(entity_id);
+					if(coherence_score < avg_coherence){
+						if(mention.getResult_entity_id() != null && entity_id.contentEquals(mention.getResult_entity_id())){
+							mention.setResult_entity_id(null);
+						}
+						entries2.remove();
+						logger.info("The coherence of entity:" + entity_id + " of mention: " + mention.getLabel() + " is lower than avg: " + coherence_score);
 					}
-					entries2.remove();
-					logger.info("The coherence of entity:" + entity_id + " of mention: " + mention.getLabel() + " is lower than avg: " + coherence_score);
-				}
-				else{
-					candidate.setCohenrence_score(coherence_score);
+					else{
+						candidate.setCohenrence_score(coherence_score);
+					}
 				}
 			}
 		}
@@ -221,8 +228,10 @@ public class TraditionalRanking {
 		Iterator<Entry<Mention, CandidateSet>> entries = candidateSetMap.entrySet().iterator();
 		while(entries.hasNext()){
 			Entry<Mention, CandidateSet> entry = entries.next();
+			Mention mention = entry.getKey();
 			CandidateSet candidateSet = entry.getValue();
 			Iterator<Entry<String, Candidate>> entries2 = candidateSet.getSet().entrySet().iterator();
+			avg_link_prob += mention.getLink_prob();
 			while(entries2.hasNext()){
 				Entry<String, Candidate> entry2 = entries2.next();
 				Candidate candidate = entry2.getValue();
@@ -240,6 +249,7 @@ public class TraditionalRanking {
 			resultMap.put(e.getId(), score);
 		}
 		avg_coherence /= (entitySet.size() + 1);		// 平滑，防止分母为0  
+		avg_link_prob /= (entitySet.size() + 1);		// 平滑，防止分母为0
 		
 		System.out.println("Size of coherence map: " + resultMap.size());
 		return resultMap;
@@ -349,16 +359,6 @@ public class TraditionalRanking {
 	
 	public static HashMap<Mention, CandidateSet> getCandidateSetMap() {
 		return candidateSetMap;
-	}
-	public static void main(String[] args) {
-		TraditionalRanking TRtest = new TraditionalRanking();
-		Scanner sc = new Scanner(System.in); 
-		while(true){
-			System.out.println("Please input a news:");
-			String news = sc.nextLine();
-			TRtest.processing(news);
-		}
-		
 	}
 
 }

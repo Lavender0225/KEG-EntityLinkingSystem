@@ -172,7 +172,7 @@ public class MentionFilter {
 		}
 	}
 	
-	public HashMap<Mention,CandidateSet> disambiguating(IndexBuilder ibd) throws IOException
+	public HashMap<Mention,CandidateSet> disambiguating( IndexBuilder ibd) throws IOException
 	{
 		//System.out.println(NlpAnalysis.parse("奥巴马"));
 		String extract = NlpAnalysis.parse(doc).toStringWithOutNature("&&");
@@ -274,13 +274,17 @@ public class MentionFilter {
     		// get entity details from XLore API
     		start1 = System.currentTimeMillis();
     		Entity tmp_e = XloreGetEntity.getEntityDetailByID(id);
-    		end1 = System.currentTimeMillis();
-    		total_query_time += end1 - start1;
-    		count += 1;
-    		if(tmp_uri.length > 1){
-    			tmp_e.setDesc(tmp_uri[1]);
+    		if(tmp_e != null){
+    			end1 = System.currentTimeMillis();
+        		total_query_time += end1 - start1;
+        		count += 1;
+        		if(tmp_uri.length > 1){
+        			tmp_e.setDesc(tmp_uri[1]);
+        		}
+    			cs.addElement(id, tmp_e);
     		}
-			cs.addElement(id, tmp_e);
+    		
+    		
     	}
     	candidateSetMap.put(mention, cs);
 	}

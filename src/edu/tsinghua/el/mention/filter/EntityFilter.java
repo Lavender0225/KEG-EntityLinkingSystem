@@ -277,24 +277,20 @@ public class EntityFilter
 		String label = null;
 		
 		System.out.println("loading concepts ...");
-		while((line=reader.readLine())!=null)//&&this.concepts.size()<1000
-		{
+		while((line=reader.readLine())!=null){//&&this.concepts.size()<1000
 			if((line.indexOf('@')==0)||(line.length()==0))
 				continue;
 			tmp=line.split(" ",3);   //最多分三段
 			cId=tmp[0].substring(tmp[0].indexOf('<')+1, tmp[0].indexOf('>')); //编号
-			if(tmp[1].contains("label"))
-			{
+			if(tmp[1].contains("label")){
 				label=tmp[2];
 				label=tmp[2].substring(tmp[2].indexOf('\"')+1,tmp[2].lastIndexOf('\"'));//名称
 				
-				if(!freqConcepts.contains(cId))
-				{
+				if(!freqConcepts.contains(cId)){
 					for (String str : freqLabels) {  //找含有这个词的concept
 					      //if(label.indexOf(str) != -1)
 						  //if(label.endsWith(str) && !label.endsWith("国家"))
-						  if(label.endsWith(str))
-					      {
+						  if(label.endsWith(str)){
 					    	  System.out.println(cId + "    " + label);
 					    	  freqConcepts.add(cId);
 					      }
