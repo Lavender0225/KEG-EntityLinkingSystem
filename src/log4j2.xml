@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="INFO">
 <Properties>
-	<Property name="log-path">/home/zj/EntityLinkingWeb/log</Property>
+	<Property name="log-path">E:\KEG\实体链接\EntityLinkingSystem\EntityLinkingSystem\log</Property>
 </Properties>
 
     <Appenders>

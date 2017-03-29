@@ -5,5 +5,8 @@
 		<action name="linkingSubmit" class="edu.tsinghua.el.web.action.LinkingAction">
 			<result type="json" />
 		</action>
+		<action name="getIndex"	class="edu.tsinghua.el.web.action.GetIndexAction">
+			<result type="json"/>
+		</action>
 	</package>
 </struts>    

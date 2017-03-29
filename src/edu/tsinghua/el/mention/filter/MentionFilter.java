@@ -74,7 +74,7 @@ public class MentionFilter {
 			Pattern pattern = Pattern.compile("[[0-9今昨明后前本上]+[年|月|日|时|分|秒]*]+"); 
 			if(!pattern.matcher(strsplit[0]).matches() && !verbList.contains(strsplit[0]) )//不是数字、日期且不是动词
 			{
-				System.out.println(str.get(i));
+				//System.out.println(str.get(i));
 				midResult.add(str.get(i));
 				Ps_result.add(PositionStart.get(i));
 				Pe_result.add(PositionEnd.get(i));
@@ -172,7 +172,7 @@ public class MentionFilter {
 		}
 	}
 	
-	public HashMap<Mention,CandidateSet> disambiguating( IndexBuilder ibd) throws IOException
+	public HashMap<Mention,CandidateSet> disambiguating(String domainName, IndexBuilder ibd) throws IOException
 	{
 		//System.out.println(NlpAnalysis.parse("奥巴马"));
 		String extract = NlpAnalysis.parse(doc).toStringWithOutNature("&&");
@@ -185,10 +185,10 @@ public class MentionFilter {
     	List<String> str = new ArrayList<String>();
     	
     	long start = System.currentTimeMillis();
-    	List<AhoCorasickDoubleArrayTrie<String>.Hit<String>> wordList = ibd.parseText(doc);
+    	List<AhoCorasickDoubleArrayTrie<String>.Hit<String>> wordList = ibd.parseText(domainName, doc);
     	long end = System.currentTimeMillis(); 
         logger.info("Parsing doc finish! Time:" + (float)(end - start)/1000);
-    	System.out.println("Parsing doc finish! Time:" + (float)(end - start)/1000);
+    	//System.out.println("Parsing doc finish! Time:" + (float)(end - start)/1000);
     	//logger.info(candidateSetMap.toString());
     	
     	for(AhoCorasickDoubleArrayTrie<String>.Hit<String> tmp_hit:wordList){
@@ -240,7 +240,7 @@ public class MentionFilter {
 		//FileManipulator.outputStringList(midResult, System.getProperty("user.dir") + news_path+"_filter.txt");
 		if(count != 0){
 			logger.info("Query total time:" + (float)(total_query_time)/1000 + "s, #query times:" + count + ", average:" + (float)(total_query_time/count)/1000 + "s");
-			System.out.println("Query total time:" + (float)(total_query_time)/1000 + "s, #query times:" + count + ", average:" + (float)(total_query_time/count)/1000 + "s");
+			//System.out.println("Query total time:" + (float)(total_query_time)/1000 + "s, #query times:" + count + ", average:" + (float)(total_query_time/count)/1000 + "s");
 		}
 		
 		//logger.info(candidateSetMap);
@@ -257,7 +257,7 @@ public class MentionFilter {
 
     	long start1 = 0;
     	long end1 = 0;
-    	logger.info(item);
+    	//logger.info(item);
     	midResult.add(item);
     	Mention mention = new Mention();
     	mention.setLabel(label);
@@ -347,6 +347,6 @@ public class MentionFilter {
 		ms.getVerbOfDoc();
 		ms.getVerbOfDoc();
 		ms.filterWp();
-		System.out.println(ms.getDoc());
+		//System.out.println(ms.getDoc());
 	}
 }

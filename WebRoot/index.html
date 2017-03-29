@@ -10,94 +10,142 @@
 	<meta http-equiv="keywords" content="keyword1,keyword2,keyword3">
 	<meta http-equiv="description" content="Entity linking system producted by KEG">
 	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="js/jquery-2.2.3.min.js"></script>
+    <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="css/bootstrap.min.css">
+	<!-- icheck skin and js	-->
+	<link rel="stylesheet" href="css/minimal/blue.css">
+	<script src="js/icheck.js"></script>
+	<!-- self-define css -->
+	<link rel="stylesheet" href="css/index.css">
     
 	<!--
 	<link rel="stylesheet" type="text/css" href="styles.css">
 	-->
 		<script type="text/javascript">
-		var XHR = false;
-		function CreateXHR(){
-			try{
-				XHR = new ActiveXObject("msxml2.XMLHTTP");
-			}catch(e1){
+		$(document).ready(function(){
+			document.getElementById ("submitButton").addEventListener ("click", sendRequest, false);
+			$('input').iCheck({
+			checkboxClass: 'icheckbox_minimal-blue',
+			radioClass: 'iradio_minimal-blue',
+			increaseArea: '20%' // optional
+			});
+			$('input').on('ifChecked', function (event){
+				$(this).closest("input").attr('checked', true);          
+			});
+			$('input').on('ifUnchecked', function (event) {
+				$(this).closest("input").attr('checked', false);
+			});
+			var index_list = false;
+			var XHR = false;
+			function CreateXHR(){
 				try{
-					XHR = new ActiveObject("microsoft.XMLHTTP");
-				}catch(e2){
+					XHR = new ActiveXObject("msxml2.XMLHTTP");
+				}catch(e1){
 					try{
-						XHR = new XMLHttpRequest();
-					}catch(e3){
-						XHR = false;
+						XHR = new ActiveObject("microsoft.XMLHTTP");
+					}catch(e2){
+						try{
+							XHR = new XMLHttpRequest();
+						}catch(e3){
+							XHR = false;
+						}
 					}
 				}
 			}
-		}
-		
-		function sendRequest(){
-			CreateXHR();
-			if(XHR){
-				var text = document.getElementById("text").value;
-				text = text.replace(/&/g, " ");
-				var uri = "http://10.1.1.68:8080/EntityLinkingWeb/linkingSubmit.action?text=" + encodeURI(text);
-				console.log("text:" + text);
-				console.log("uri:" + uri);
-				XHR.open("GET", uri, true);
-				XHR.onreadystatechange = resultHander;
-				XHR.send(null);
+			
+			function test(){
+					var text = document.getElementById("text").value;
+					text = text.replace(/&/g, " ");
+					var uri = "http://10.1.1.68:8080/EntityLinkingWeb/linkingSubmit.action?";
+					var checked_ids = $('input:checked').map(function() {
+						return this.id;
+					});
+					var index_choose = checked_ids.get().join();
+					var data = new FormData();
+					data.append('text', text);
+					data.append('index_choose', index_choose);
+					
+					console.log("text:"+text);
+					console.log("index_choose:"+index_choose)
+					console.log('data.text:' + data.get("text"));
+					console.log('data.index_choose:' + data.get("index_choose"));
 			}
-		}
-		function resultHander(){
-			if(XHR.readyState == 4 && XHR.status == 200){
-				console.log(XHR.response);
-            	console.log(XHR.responseText);
-				var userObj = JSON.parse(XHR.responseText);
-				var resultObj = userObj.ResultList;
-				var text = String(userObj.Text);
-				var myText = text;
-				for(var i=0;i<resultObj.length;i++){
-					//myText = mytext.substring(0, resultObj[i]["start"]) + resultObj[i]["label"].link(resultObj[i]["url"]) + text.substr(resultObj[i]["end"] + 1);
-					myText = myText.replace(new RegExp(resultObj[i]["label"], "gm"), resultObj[i]["label"].link(resultObj[i]["url"]));
+			
+			function sendRequest(){
+				CreateXHR();
+				if(XHR){
+					var text = document.getElementById("text").value;
+					text = text.replace(/&/g, " ");
+					var uri = "http://10.1.1.68:8080/EntityLinkingWeb//linkingSubmit.action?";
+					var checked_ids = $('input:checked').map(function() {
+						return this.id;
+					});
+					var index_choose = checked_ids.get().join();
+					var data = "text="+text
+								+ "&index_choose=" + index_choose;
+					
+					console.log('text:' + text);
+					console.log('index_choose:' +index_choose);
+					XHR.open("POST", uri, true);
+					XHR.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+					XHR.onreadystatechange = resultHander;
+					XHR.send(data);
 				}
-				
-				var myTable = "<table>";
-				myTable += "<tr><td>label</td><td>start</td><td>end</td>><td>url</td><td>Relatedness</td><td>Popularity</td><td>Coherence</td><td>Link Probability</td></tr>"; 
-				var myTable= "<table><tr><td><b>Label</b></td>";
-   				myTable+= "<td style='width: 100px; text-align: right;'><b>Position</b></td>";
-    			myTable+= "<td style='width: 300px; text-align: right;'><b>URL</b></td>";
-    			myTable+= "<td style='width: 150px; text-align: right;'><b>Relatedness</b></td>";
-    			myTable+= "<td style='width: 150px; text-align: right;'><b>Popularity</b></td>";
-    			myTable+= "<td style='width: 150px; text-align: right;'><b>Coherence</b></td>";
-    			myTable+= "<td style='width: 150px; text-align: right;'><b>Link Probability</b></td>";
-    			myTable+= "</tr>";
+			}
+			function resultHander(){
+				if(XHR.readyState == 4 && XHR.status == 200){
+					console.log(XHR.response);
+					console.log(XHR.responseText);
+					var userObj = JSON.parse(XHR.responseText);
+					var resultObj = userObj.ResultList;
+					var text = String(userObj.text);
+					var myText = text;
+					for(var i=0;i<resultObj.length;i++){
+						//myText = mytext.substring(0, resultObj[i]["start"]) + resultObj[i]["label"].link(resultObj[i]["url"]) + text.substr(resultObj[i]["end"] + 1);
+						myText = myText.replace(new RegExp(resultObj[i]["label"], "gm"), resultObj[i]["label"].link(resultObj[i]["url"]));
+					}
+					
+					var myTable = "<table>";
+					myTable += "<tr><td>label</td><td>start</td><td>end</td>><td>url</td><td>Relatedness</td><td>Popularity</td><td>Coherence</td><td>Link Probability</td></tr>"; 
+					var myTable= "<table><tr><td><b>Label</b></td>";
+					myTable+= "<td style='width: 100px; text-align: right;'><b>Position</b></td>";
+					myTable+= "<td style='width: 300px; text-align: right;'><b>URL</b></td>";
+					myTable+= "<td style='width: 150px; text-align: right;'><b>Relatedness</b></td>";
+					myTable+= "<td style='width: 150px; text-align: right;'><b>Popularity</b></td>";
+					myTable+= "<td style='width: 150px; text-align: right;'><b>Coherence</b></td>";
+					myTable+= "<td style='width: 150px; text-align: right;'><b>Link Probability</b></td>";
+					myTable+= "</tr>";
 
-    			myTable+="<tr><td 										  >---------------</td>";
-    			myTable+="<td     style='width: 100px; text-align: right;'>---------------</td>";
-    			myTable+="<td     style='width: 300px; text-align: right;'>---------------</td>";
-    			myTable+="<td     style='width: 150px; text-align: right;'>---------------</td>";
-    			myTable+="<td     style='width: 150px; text-align: right;'>---------------</td>";
-    			myTable+="<td     style='width: 150px; text-align: right;'>---------------</td>";
-    			myTable+="<td     style='width: 150px; text-align: right;'>---------------</td></tr>";
-				for(var i=0;i<resultObj.length;i++)
-				{
-				    myTable += "<tr>";
-				    myTable += "<td>"+resultObj[i]["label"]+"</td>";
-				    myTable += "<td style='width: 100px; text-align: right;'>"+resultObj[i]["start_index"] + " - " + resultObj[i]["end_index"] +"</td>";
-				    myTable += "<td style='width: 300px;text-align: right;'>"+resultObj[i]["url"].link(resultObj[i]["url"])+"</td>";
-				    myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["relatedness_score"].toFixed(4)+"</td>";
-				    myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["popularity_score"].toFixed(4)+"</td>";
-				    myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["coherence_score"].toFixed(4)+"</td>";
-				    myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["link_prob"].toFixed(4)+"</td>";
-				    myTable += "<tr>";		  
+					myTable+="<tr><td 										  >---------------</td>";
+					myTable+="<td     style='width: 100px; text-align: right;'>---------------</td>";
+					myTable+="<td     style='width: 300px; text-align: right;'>---------------</td>";
+					myTable+="<td     style='width: 150px; text-align: right;'>---------------</td>";
+					myTable+="<td     style='width: 150px; text-align: right;'>---------------</td>";
+					myTable+="<td     style='width: 150px; text-align: right;'>---------------</td>";
+					myTable+="<td     style='width: 150px; text-align: right;'>---------------</td></tr>";
+					for(var i=0;i<resultObj.length;i++)
+					{
+						myTable += "<tr>";
+						myTable += "<td>"+resultObj[i]["label"]+"</td>";
+						myTable += "<td style='width: 100px; text-align: right;'>"+resultObj[i]["start_index"] + " - " + resultObj[i]["end_index"] +"</td>";
+						myTable += "<td style='width: 300px;text-align: right;'>"+resultObj[i]["url"].link(resultObj[i]["url"])+"</td>";
+						myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["relatedness_score"].toFixed(4)+"</td>";
+						myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["popularity_score"].toFixed(4)+"</td>";
+						myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["coherence_score"].toFixed(4)+"</td>";
+						myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["link_prob"].toFixed(4)+"</td>";
+						myTable += "<tr>";		  
+					}
+					myTable += "</table>";
+					document.getElementById('textShow').innerHTML = myText;
+					document.getElementById('jsonShow').innerHTML = myTable;
+					
 				}
-				myTable += "</table>";
-				document.getElementById('textShow').innerHTML = myText;
-				document.getElementById('jsonShow').innerHTML = myTable;
-				
 			}
-		}
+			
+		});
+		
 		</script>
   </head>
   
@@ -109,33 +157,59 @@
 				<em>KEG Entity Linking System</em>
 			</h2>
 			<hr class="text-center" />
-			<p class="text-center"></p>
 			<div class="row-fluid">
-				<div class="span6">
-					<fieldset>
-						<div class="form-group">
-							<textarea cols="80" id="text" rows="6">
-							</textarea>
-						</div> <button type="submit" onclick="sendRequest();">提交</button>
-					</fieldset>
+				<h4>Choose Domain</h4>
+				<div id="ichecks">
+					<li>
+						<label id="index_type_per" for="minimal-checkbox-1" class="">
+							<input type='checkbox'  id="person" checked>
+							Person
+						</label>
+					</li>
+					<li>
+						<label id="index_type_loc" for="minimal-checkbox-2" class="">
+							<input type='checkbox'  id="location" checked>
+							Location
+						</label>
+					</li>
+					<li>
+						<label id="index_type_org" for="minimal-checkbox-3" class="">
+							<input type='checkbox'  id="orgnization" checked>
+							Orgnization
+						</label>
+					</li>
+					<li>
+						<label id="index_type_tech" for="minimal-checkbox-4" class="">
+							<input type='checkbox'  id="technology" checked>
+							Tecnology
+						</label>
+					</li>
 				</div>
-				<div class="span6">
-					<h3>
-						<em>结果</em>
-					</h3>
-					<p id="textShow" style="width: 600px; ">
-					<p id="jsonShow">
-					</p>
-				</div>
+				<hr class="text-center" />
+				<h4>Text Input</h4>
+				<div class="form-group">
+					
+					<textarea cols="80" id="text" rows="6" name="text_input" placeholder="Please input text...">
+					</textarea>
+				
+				</div> 
+				<button type="submit" id="submitButton">Submit</button>
+				<h3>
+					<em>Linking Result</em>
+				</h3>
+				<p id="textShow" style="width: 600px; "></p>
+				<p id="jsonShow">
+				</p>
 				
 				
 			</div>
 		</div>
 	</div>
 	</div>
-	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) ->
     <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <!-- Include all compiled plugins (below), or include individual files as needed ->
     <script src="js/bootstrap.min.js"></script>
+	<-->
   </body>
 </html>

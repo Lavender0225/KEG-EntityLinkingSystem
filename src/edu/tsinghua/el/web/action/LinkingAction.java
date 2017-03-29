@@ -11,26 +11,36 @@ import org.apache.struts2.json.annotations.JSON;
 
 import com.opensymphony.xwork2.ActionSupport;
 
+import edu.tsinghua.el.model.FormData;
 import edu.tsinghua.el.model.LinkingResult;
 import edu.tsinghua.el.service.EntityLinkingServiceImpl;
 
 public class LinkingAction extends ActionSupport{
 	private static final long serialVersionUID = 1L;
-	private static final Logger logger = LogManager.getLogger(ActionSupport.class);
+	private static final Logger logger = LogManager.getLogger(LinkingAction.class);
 	
 	private String text;
+	private String index_choose;
 	
 	private ArrayList<LinkingResult> resultList;
 
-	@JSON(name="Text")
+	@JSON(name="text")
 	public String getText() {
 		return text;
 	}
-
+	@JSON(name="text")
 	public void setText(String text) {
 		this.text = text;
 	}
-	
+	@JSON(name="index_choose")
+	public String getIndex_choose() {
+		return index_choose;
+	}
+	@JSON(name="index_choose")
+	public void setIndex_choose(String index_choose) {
+		this.index_choose = index_choose;
+	}
+
 	@JSON(name="ResultList")
 	public ArrayList<LinkingResult> getResultList() {
 		return resultList;
@@ -42,10 +52,10 @@ public class LinkingAction extends ActionSupport{
 
 	public String execute() throws Exception{
 		logger.info("Text Acceptted: " + text);
-		System.out.println("Get Text:" + text);
+		logger.info("Indedx Choose Acceptted: " + index_choose);
 		
 		EntityLinkingServiceImpl linkingIns = new EntityLinkingServiceImpl();
-		resultList = linkingIns.linking(text);
+		resultList = linkingIns.linking(text, index_choose);
 		
 		logger.info("Linking Result List:" + resultList);
 		System.out.println("Linking Result List:" + resultList);

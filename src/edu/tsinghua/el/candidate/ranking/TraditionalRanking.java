@@ -39,8 +39,8 @@ public class TraditionalRanking {
 	private static double avg_link_prob = 0;		// calculated in calCoherence()
 	private static final Logger logger = LogManager.getLogger(TraditionalRanking.class);
 	
-	public static void processing(String doc){
-		candidateSetMap = CandidateGeneration.extractMentionForNewsFromString(doc);
+	public static void processing(String domainName, String doc){
+		candidateSetMap = CandidateGeneration.extractMentionForNewsFromString(domainName, doc);
 		//logger.info(candidateSetMap.toString());
 		ranking();
 		coherenceMap = calCoherence();
@@ -49,7 +49,7 @@ public class TraditionalRanking {
 		logger.info(candidateSetMap.toString());
 	}
 	public void processing(String domainName, String doc, String result_path){
-		candidateSetMap = CandidateGeneration.extractMentionForNewsFromString(doc);
+		candidateSetMap = CandidateGeneration.extractMentionForNewsFromString(domainName, doc);
 		//ogger.info(candidateSetMap.toString());
 		ranking();
 		prune();
@@ -109,7 +109,7 @@ public class TraditionalRanking {
 			else{
 			
 				CandidateSet.sortByValue(candidateSet.getSet(), true);
-				logger.info(candidateSet.getSet());
+				//logger.info(candidateSet.getSet());
 				int maintain_amount = (int) (candidateSet.getSet().size() * Constant.sigma + 1);
 				// second, delete the candidates that are not related to the mention
 				entries2 = candidateSet.getSet().entrySet().iterator();

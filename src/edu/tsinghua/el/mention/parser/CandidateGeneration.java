@@ -28,11 +28,11 @@ public class CandidateGeneration {
 	 * @param news_path, news的存储路径
 	 */
 	private static void chooseIndex(){
-		ibd = IndexBuilder.getInstance(Constant.entity_ready_file, PropertiesReader.getTriePath());
+		ibd = IndexBuilder.getInstance();
 	}
 	
 	@SuppressWarnings("resource")
-	public static HashMap<Mention, CandidateSet> extractMentionForNewsFromFile(String news_path){
+	public static HashMap<Mention, CandidateSet> extractMentionForNewsFromFile(String domainName, String news_path){
     	BufferedReader reader = null;
     	chooseIndex();
 		try {
@@ -46,7 +46,7 @@ public class CandidateGeneration {
 	    	
 	    	MentionFilter handle = new MentionFilter(doc);
 	        //消歧后
-	    	candidateSetMap = handle.disambiguating(ibd);
+	    	candidateSetMap = handle.disambiguating(domainName, ibd);
 	    	
 	    	
 		} catch (IOException e) {
@@ -57,22 +57,18 @@ public class CandidateGeneration {
 	public HashMap<Mention, CandidateSet> getCandidateSetMap() {
 		return candidateSetMap;
 	}
-	public static HashMap<Mention, CandidateSet> extractMentionForNewsFromString(String doc){
+	public static HashMap<Mention, CandidateSet> extractMentionForNewsFromString(String domainName, String doc){
 		chooseIndex();
 		doc = doc.toLowerCase();
 		MentionFilter handle = new MentionFilter(doc);
         //消歧后
     	try {
     		//logger.info(doc);
-			candidateSetMap = handle.disambiguating(ibd);
+			candidateSetMap = handle.disambiguating(domainName, ibd);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
     	return candidateSetMap;
 		
-	}
-	public static void main(String[] args) {
-		//System.out.println(System.getProperty("user.dir"));
-		CandidateGeneration.extractMentionForNewsFromFile(Constant.news_path);
 	}
 }

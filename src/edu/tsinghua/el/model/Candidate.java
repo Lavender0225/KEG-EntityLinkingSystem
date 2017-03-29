@@ -17,8 +17,6 @@ public class Candidate {
 	
 	private double reletedness;
 	
-	private double link_prob;
-	
 	
 	public Candidate(){
 		label_edit_distance = 0;
@@ -128,6 +126,7 @@ public class Candidate {
 	public void setReletedness(double reletedness) {
 		this.reletedness = reletedness;
 	}
+	
 
 	@Override
 	public String toString() {

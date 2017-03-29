@@ -9,7 +9,6 @@ import org.apache.logging.log4j.Logger;
 import ansj.word2vec.Word2VEC;
 import edu.tsinghua.api.xlore.GetLinkProb;
 import edu.tsinghua.api.xlore.XloreGetPopularity;
-import edu.tsinghua.el.common.Constant;
 import edu.tsinghua.el.common.PropertiesReader;
 import edu.tsinghua.el.index.IndexBuilder;
 
@@ -23,10 +22,9 @@ public class Initialize  extends HttpServlet{
 		logger.info("Initialization starts...");
 		long start = System.currentTimeMillis();
 		// load properties
-		PropertiesReader prop = new PropertiesReader();
-		String trie_path = prop.getTriePath();
+		logger.info(PropertiesReader.getDomainIndexMap());
 		// load index
-		IndexBuilder ibd = IndexBuilder.getInstance(Constant.entity_ready_file,trie_path);
+		IndexBuilder ibd = IndexBuilder.getInstance();
 		
 		// load entity vector
 		Word2VEC.getInstance();
