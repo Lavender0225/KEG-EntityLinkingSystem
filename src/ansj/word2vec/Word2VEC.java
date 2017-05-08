@@ -34,9 +34,9 @@ public class Word2VEC {
 	public static String words_model_path = Constant.words_model_path;
 	public static String entity_model_path = Constant.entity_model_path;
 	public static String baidu_xlore_map_path = Constant.baidu_xlore_map_path;
-	public static HashMap<String, String> baiduXloreMap = new HashMap<String, String>();	//key:xlore_instance_id, value:baidu_id
+	public static HashMap<String, String> baiduXloreMap = new HashMap<String, String>();	//key:xlore_instance_id(include prefix), value:baidu_id
 	private HashMap<String, float[]> wordMap = null;
-	private HashMap<String, float[]> entityMap = null;
+	private HashMap<String, float[]> entityMap = null;		//Note: the key is baiduURL
 	private int words;
 	private int size;
 	private int topNSize = 40;
@@ -48,7 +48,7 @@ public class Word2VEC {
 	
 	private Word2VEC(){
 		try {
-			//wordMap = this.loadGoogleModel(words_model_path);
+			wordMap = this.loadGoogleModel(words_model_path);
 			loadBaiduXloreMap();
 			entityMap = this.loadGoogleModel(entity_model_path);
 			//logger.info(this.similarityOfWords("Harry Potter", "Hogwarts"));
@@ -58,6 +58,66 @@ public class Word2VEC {
 	}
 	public static Word2VEC getInstance(){
 		return Word2VECHolder.instance;
+	}
+	
+	public float[] getWordVec(String word){
+		
+		return wordMap.get(word);
+	}
+	
+	public float[] getEntityVec(String entity_id){
+		if(baiduXloreMap.containsKey(entity_id)){
+			String baidu_id = baiduXloreMap.get(entity_id);
+			baidu_id = (String) baidu_id.subSequence(Constant.baidu_entity_prefix.length(), baidu_id.length());
+			return entityMap.get(baidu_id);
+		}
+		return null;
+	}
+	
+	/**
+	 * 直接根据baidu_id来获取vector，如果没有的话，使用其title的vec
+	 * @param entity_id
+	 * @param entity_title
+	 * @return
+	 */
+	public float[] getBaiduEntityVec(String entity_id, String entity_title){
+		if(entityMap.containsKey(entity_id)){
+			return entityMap.get(entity_id);
+		}
+		if(wordMap.containsKey(entity_title))
+			return wordMap.get(entity_title);
+		if(entity_title.contains("(") && entity_title.contains(")")){
+			try{
+				String title = entity_title.split("(")[0];
+				String desc = entity_title.split("(")[1].split(")")[0];
+				if(wordMap.containsKey(title) && wordMap.containsKey(desc)){
+					float[] title_vec = wordMap.get(title);
+					float[] desc_vec = wordMap.get(desc);
+					float[] result = new float[size];
+					for(int i = 0; i < size; i ++){
+						result[i] = (title_vec[i] + desc_vec[i])/2;
+					}
+					return result;
+				}
+				return null;
+			}catch(Exception e){
+				e.printStackTrace();
+				return null;
+			}
+		}
+		return null;
+		
+	}
+	public boolean containsEntity(String entity_id){
+		if(baiduXloreMap.containsKey(entity_id)){
+			String baidu_id = baiduXloreMap.get(entity_id);
+			baidu_id = (String) baidu_id.subSequence(Constant.baidu_entity_prefix.length(), baidu_id.length());
+			if(entityMap.containsKey(baidu_id)){
+				logger.info("entity id:" + entity_id + " is in the vec model");
+				return true;
+			}
+		}
+		return false;
 	}
 
 	
@@ -479,7 +539,7 @@ public class Word2VEC {
 	 * @param two entity id
 	 * @return
 	 */
-	public float similarityOfBaiduEntity(String id1, String id2){
+	public double similarityOfBaiduEntity(String id1, String id2){
 		if(baiduXloreMap.containsKey(id2) && baiduXloreMap.containsKey(id1)){
 			String baidu_id1 = baiduXloreMap.get(id1);
 			baidu_id1 = (String) baidu_id1.subSequence(Constant.baidu_entity_prefix.length(), baidu_id1.length());
@@ -489,10 +549,15 @@ public class Word2VEC {
 				float[] s1 = this.entityMap.get(baidu_id1);
 				float[] s2 = this.entityMap.get(baidu_id2);
 				float dist = 0;
-				for (int i = 0; i < s1.length; i ++)
+				float modulo_a = 0;
+				float modulo_b = 0;
+				for (int i = 0; i < s1.length; i ++){
 					dist += s1[i]*s2[i];
+					modulo_a += s1[i]*s1[i];
+					modulo_b += s2[i]*s2[i];
+				}
 				//logger.info("similarity of " + id1 + " and " + id2 + " is: " + dist);
-				return dist;
+				return dist/java.lang.Math.sqrt(modulo_a*modulo_b);
 			}
 //			else{
 //				if(!entityMap.containsKey(baidu_id1)){
@@ -698,6 +763,9 @@ public class Word2VEC {
 		return size;
 	}
 	
+	public HashMap<String, float[]> getEntityMap() {
+		return entityMap;
+	}
 	public static void main(String[] args){
 		Word2VEC w2vec = Word2VEC.getInstance();
 		Scanner sc = new Scanner(System.in); 

@@ -183,31 +183,6 @@ public class FeatureCal {
 		//System.out.println(sim);
 		return sim;
 	}
-	/**
-	 * calculate the context entity's similarity between entity and mention
-	 * @param entity
-	 * @param mention
-	 * @return
-	 */
-	public static double simContextEntity(Entity entity, Mention mention){
-		HashSet<String> entity_context = new HashSet<String>();
-		entity_context.addAll(entity.getRelated_entites_en());
-		entity_context.addAll(entity.getsuper_classes_en());
-		int len_entity = entity_context.size();
-		entity_context.retainAll(mention.getContext_entity());
-		double score_en =  (double)entity_context.size()/(len_entity + mention.getContext_entity().size() - entity_context.size());
-		entity_context.clear();
-		
-		entity_context.addAll(entity.getRelated_entites_zh());
-		entity_context.addAll(entity.getsuper_classes_zh());
-		int len_entity_2 = entity_context.size();
-		entity_context.retainAll(mention.getContext_entity());
-		double score_zh = (double)entity_context.size()/(len_entity_2 + mention.getContext_entity().size() - entity_context.size());
-		if(score_zh > score_en)
-			return score_zh;
-		return score_en;
-	}
-
 	
 	public static void main(String[] args) {
 		System.out.println(FeatureCal.editDistanceOfTwoString("中华人民共和国", "中华人民共和国"));

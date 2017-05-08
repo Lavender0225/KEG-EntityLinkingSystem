@@ -46,7 +46,7 @@ public class XloreGetEntity {
         } catch ( IOException e) {
         	e.printStackTrace();
         }
-        System.out.println(json);
+       //System.out.println(json);
         // json parse
 		return parse(id, json.toString());
 		

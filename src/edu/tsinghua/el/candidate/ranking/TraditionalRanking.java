@@ -39,11 +39,17 @@ public class TraditionalRanking {
 	private static double avg_link_prob = 0;		// calculated in calCoherence()
 	private static final Logger logger = LogManager.getLogger(TraditionalRanking.class);
 	
-	public static void processing(String domainName, String doc){
-		candidateSetMap = CandidateGeneration.extractMentionForNewsFromString(domainName, doc);
-		//logger.info(candidateSetMap.toString());
+	/**
+	 * the linking processing function
+	 * @param domainNameList, format:"index1,index2"
+	 * @param doc
+	 */
+	public static void processing(String domainNameList, String doc){
+		candidateSetMap = CandidateGeneration.extractMentionForNewsFromString(domainNameList, doc);
+		logger.info("Before Ranking:" + candidateSetMap.toString());
 		ranking();
 		coherenceMap = calCoherence();
+		logger.info("CandidateSetMap Before Prune:" + candidateSetMap.keySet());
 		logger.info("The average score of coherence: " + avg_coherence);
 		prune();
 		logger.info(candidateSetMap.toString());
@@ -103,7 +109,7 @@ public class TraditionalRanking {
 				//logger.info("Mention: "+ mention_label + "The most related entity score:" + max_score);
 			}
 			
-			if(max_score <= 0){	//如果最大相关度的分数是负数，直接认为没有合适的entity可以link
+			if(max_score < 0){	//如果最大相关度的分数是负数，直接认为没有合适的entity可以link
 				mention.setResult_entity_id(null);
 			}
 			else{
@@ -275,8 +281,8 @@ public class TraditionalRanking {
 	            
 	            if (c != null){
 	            	writer.write(mention.getLabel()+ "----" + candidateSet.getSet().get(mention.getResult_entity_id()).getEntity() + "\n");
-	            	doc_with_link += doc.substring(last_end, mention.getPos_end()) + "[http://xlore.org/sigInfo.json?uri=http%3A%2F%2Fxlore.org%2Finstance%2F" + mention.getResult_entity_id() + "]";
-	            	last_end = mention.getPos_end();
+	            	doc_with_link += doc.substring(last_end, mention.getPosition().end) + "[http://xlore.org/sigInfo.json?uri=http%3A%2F%2Fxlore.org%2Finstance%2F" + mention.getResult_entity_id() + "]";
+	            	last_end = mention.getPosition().begin;
 	            } 
 	        }
 	        doc_with_link += doc.substring(last_end, doc.length());
@@ -312,8 +318,8 @@ public class TraditionalRanking {
 	            CandidateSet candidateSet = entry.getValue(); 
 	            Candidate c = candidateSet.getSet().get(mention.getResult_entity_id());
 	            if (c != null){
-	            	doc_with_link += doc.substring(last_end, mention.getPos_end()) + "[http://xlore.org/sigInfo.json?uri=http%3A%2F%2Fxlore.org%2Finstance%2F" + mention.getResult_entity_id() + "]";
-	            	last_end = mention.getPos_end() + 1;
+	            	doc_with_link += doc.substring(last_end, mention.getPosition().end) + "[http://xlore.org/sigInfo.json?uri=http%3A%2F%2Fxlore.org%2Finstance%2F" + mention.getResult_entity_id() + "]";
+	            	last_end = mention.getPosition().end + 1;
 	            }
 	            
 	        }
@@ -343,8 +349,8 @@ public class TraditionalRanking {
             public int compare( Map.Entry<Mention,CandidateSet> o1, Map.Entry<Mention,CandidateSet> o2 )
             {
                 if (reverse)
-                    return o2.getKey().getPos_end() - o1.getKey().getPos_end();
-                return o1.getKey().getPos_end() - o2.getKey().getPos_end();
+                    return o2.getKey().getPosition().compareTo(o1.getKey().getPosition());
+                return o1.getKey().getPosition().compareTo(o2.getKey().getPosition());
             }
         } );
         HashMap<Mention,CandidateSet> result = new LinkedHashMap<Mention,CandidateSet>();

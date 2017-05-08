@@ -29,7 +29,7 @@ public class Constant {
     public static int mention_context_window = 50;
     
     //public static String popularity_path = "./etc/entity/popularity.txt";
-    public static String commonness_path = "/home/zj/EntityLinkingWeb/etc/entity/commonness.txt";
+    public static String commonness_path = "/home/zj/EntityLinkingWeb/etc/entity/popularity_.txt";
     public static String commonness_ready_path = "/home/zj/EntityLinkingWeb/etc/entity/commonnessReadyForInput";
     
     // linkprob file path

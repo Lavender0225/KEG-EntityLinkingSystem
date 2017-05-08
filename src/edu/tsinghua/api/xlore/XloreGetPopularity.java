@@ -300,7 +300,7 @@ public class XloreGetPopularity {
 					return (double)commonnessMap.get(mention.toLowerCase()).get(id);
 				}
 			}
-			return 0;
+			return 0.0001;
 		}
 		public static void outputCommonness(){
 			OutputStream o = null;

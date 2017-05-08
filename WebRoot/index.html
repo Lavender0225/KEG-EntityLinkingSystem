@@ -57,7 +57,7 @@
 			
 			function test(){
 					var text = document.getElementById("text").value;
-					text = text.replace(/&/g, " ");
+					text = text.replace(/%/g, " ");
 					var uri = "http://10.1.1.68:8080/EntityLinkingWeb/linkingSubmit.action?";
 					var checked_ids = $('input:checked').map(function() {
 						return this.id;
@@ -77,21 +77,25 @@
 				CreateXHR();
 				if(XHR){
 					var text = document.getElementById("text").value;
-					text = text.replace(/&/g, " ");
+					text = text.replace(/[%&]/g, " ");
 					var uri = "http://10.1.1.68:8080/EntityLinkingWeb//linkingSubmit.action?";
 					var checked_ids = $('input:checked').map(function() {
 						return this.id;
 					});
 					var index_choose = checked_ids.get().join();
-					var data = "text="+text
-								+ "&index_choose=" + index_choose;
-					
-					console.log('text:' + text);
-					console.log('index_choose:' +index_choose);
-					XHR.open("POST", uri, true);
-					XHR.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-					XHR.onreadystatechange = resultHander;
-					XHR.send(data);
+					if(!index_choose) alert("Please choose a domain.");
+					else{
+						
+						var data = "text="+text
+									+ "&index_choose=" + index_choose;
+						
+						console.log('text:' + text);
+						console.log('index_choose:' +index_choose);
+						XHR.open("POST", uri, true);
+						XHR.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+						XHR.onreadystatechange = resultHander;
+						XHR.send(data);
+					}
 				}
 			}
 			function resultHander(){
@@ -108,12 +112,13 @@
 					}
 					
 					var myTable = "<table>";
-					myTable += "<tr><td>label</td><td>start</td><td>end</td>><td>url</td><td>Relatedness</td><td>Popularity</td><td>Coherence</td><td>Link Probability</td></tr>"; 
+					myTable += "<tr><td>label</td><td>start</td><td>end</td>><td>url</td><td>BeliefScore</td><td>Popularity</td><td>ContextSim</td><td>Coherence</td><td>Link Probability</td></tr>"; 
 					var myTable= "<table><tr><td><b>Label</b></td>";
 					myTable+= "<td style='width: 100px; text-align: right;'><b>Position</b></td>";
 					myTable+= "<td style='width: 300px; text-align: right;'><b>URL</b></td>";
-					myTable+= "<td style='width: 150px; text-align: right;'><b>Relatedness</b></td>";
+					myTable+= "<td style='width: 150px; text-align: right;'><b>BeliefScore</b></td>";
 					myTable+= "<td style='width: 150px; text-align: right;'><b>Popularity</b></td>";
+					myTable+= "<td style='width: 150px; text-align: right;'><b>ContextSim</b></td>";
 					myTable+= "<td style='width: 150px; text-align: right;'><b>Coherence</b></td>";
 					myTable+= "<td style='width: 150px; text-align: right;'><b>Link Probability</b></td>";
 					myTable+= "</tr>";
@@ -131,8 +136,9 @@
 						myTable += "<td>"+resultObj[i]["label"]+"</td>";
 						myTable += "<td style='width: 100px; text-align: right;'>"+resultObj[i]["start_index"] + " - " + resultObj[i]["end_index"] +"</td>";
 						myTable += "<td style='width: 300px;text-align: right;'>"+resultObj[i]["url"].link(resultObj[i]["url"])+"</td>";
-						myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["relatedness_score"].toFixed(4)+"</td>";
+						myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["beliefScore"].toFixed(4)+"</td>";
 						myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["popularity_score"].toFixed(4)+"</td>";
+						myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["contextSim"].toFixed(4)+"</td>";
 						myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["coherence_score"].toFixed(4)+"</td>";
 						myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["link_prob"].toFixed(4)+"</td>";
 						myTable += "<tr>";		  
@@ -180,8 +186,26 @@
 					</li>
 					<li>
 						<label id="index_type_tech" for="minimal-checkbox-4" class="">
-							<input type='checkbox'  id="technology" checked>
+							<input type='checkbox'  id="technology" >
 							Tecnology
+						</label>
+					</li>
+					<li>
+						<label id="index_type_tech" for="minimal-checkbox-5" class="">
+							<input type='checkbox'  id="film" >
+							Film
+						</label>
+					</li>
+					<li>
+						<label id="index_type_tech" for="minimal-checkbox-6" class="">
+							<input type='checkbox'  id="economy" >
+							Economy
+						</label>
+					</li>
+					<li>
+						<label id="index_type_tech" for="minimal-checkbox-7" class="">
+							<input type='checkbox'  id="medicine" >
+							Medicine
 						</label>
 					</li>
 				</div>
@@ -200,8 +224,6 @@
 				<p id="textShow" style="width: 600px; "></p>
 				<p id="jsonShow">
 				</p>
-				
-				
 			</div>
 		</div>
 	</div>

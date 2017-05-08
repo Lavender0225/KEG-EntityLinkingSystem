@@ -15,12 +15,11 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import edu.tsinghua.el.index.AhoCorasickDoubleArrayTrie;
 import edu.tsinghua.el.index.State;
-import edu.tsinghua.el.index.AhoCorasickDoubleArrayTrie.Builder;
-import edu.tsinghua.el.index.AhoCorasickDoubleArrayTrie.Hit;
-import edu.tsinghua.el.index.AhoCorasickDoubleArrayTrie.IHit;
-import edu.tsinghua.el.index.AhoCorasickDoubleArrayTrie.IHitFull;
 
 /**
  * An implemention of Aho Corasick algorithm based on Double Array Trie
@@ -239,13 +238,14 @@ public class AhoCorasickDoubleArrayTrie<V> implements Serializable
          */
         void hit(int begin, int end, V value, int index);
     }
+    
 
     /**
      * A result output
      *
      * @param <V> the value type
      */
-    public class Hit<V>
+    public final class Hit<V>
     {
         /**
          * the beginning index, inclusive.
@@ -271,6 +271,28 @@ public class AhoCorasickDoubleArrayTrie<V> implements Serializable
         public String toString()
         {
             return String.format("[%d:%d]=%s", begin, end, value);
+        }
+        
+        @Override
+        public boolean equals(Object obj){
+        	if(obj == null || !Hit.class.isAssignableFrom(obj.getClass()))
+        		return false;
+        	Hit<V> o = (Hit<V>) obj;
+        	return new EqualsBuilder().
+                    // if deriving: appendSuper(super.equals(obj)).
+                    append(begin, o.begin).
+                    append(begin, o.begin).
+                    isEquals();
+        	
+        }
+        
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder(17, 31). // two randomly chosen prime numbers
+                // if deriving: appendSuper(super.hashCode()).
+                append(begin).
+                append(end).
+                toHashCode();
         }
     }
 

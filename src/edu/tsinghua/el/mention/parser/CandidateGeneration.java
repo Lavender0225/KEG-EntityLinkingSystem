@@ -17,7 +17,6 @@ import edu.tsinghua.el.common.PropertiesReader;
 import edu.tsinghua.el.index.IndexBuilder;
 
 public class CandidateGeneration {
-	private static IndexBuilder ibd;
 	
 	private static HashMap<Mention,CandidateSet> candidateSetMap = new HashMap<Mention,CandidateSet>();
 	public static final Logger logger = LogManager.getLogger();
@@ -27,14 +26,10 @@ public class CandidateGeneration {
 	 * 
 	 * @param news_path, news的存储路径
 	 */
-	private static void chooseIndex(){
-		ibd = IndexBuilder.getInstance();
-	}
 	
 	@SuppressWarnings("resource")
 	public static HashMap<Mention, CandidateSet> extractMentionForNewsFromFile(String domainName, String news_path){
     	BufferedReader reader = null;
-    	chooseIndex();
 		try {
 			reader = new BufferedReader(new FileReader(System.getProperty("user.dir") + news_path));
 			String line = null;
@@ -46,7 +41,7 @@ public class CandidateGeneration {
 	    	
 	    	MentionFilter handle = new MentionFilter(doc);
 	        //消歧后
-	    	candidateSetMap = handle.disambiguating(domainName, ibd);
+	    	candidateSetMap = handle.disambiguating(domainName);
 	    	
 	    	
 		} catch (IOException e) {
@@ -58,13 +53,12 @@ public class CandidateGeneration {
 		return candidateSetMap;
 	}
 	public static HashMap<Mention, CandidateSet> extractMentionForNewsFromString(String domainName, String doc){
-		chooseIndex();
 		doc = doc.toLowerCase();
 		MentionFilter handle = new MentionFilter(doc);
         //消歧后
     	try {
     		//logger.info(doc);
-			candidateSetMap = handle.disambiguating(domainName, ibd);
+			candidateSetMap = handle.disambiguating(domainName);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

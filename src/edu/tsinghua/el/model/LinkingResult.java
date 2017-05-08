@@ -9,6 +9,8 @@ public class LinkingResult {
 	private double coherence_score;
 	private double popularity_score;
 	private double relatedness_score;
+	private double contextSim;
+	private double beliefScore;
 	private double link_prob;
 	
 	public int getStart_index() {
@@ -30,6 +32,18 @@ public class LinkingResult {
 		this.label = label;
 	}
 	
+	public double getContextSim() {
+		return contextSim;
+	}
+	public void setContextSim(double contextSim) {
+		this.contextSim = contextSim;
+	}
+	public double getBeliefScore() {
+		return beliefScore;
+	}
+	public void setBeliefScore(double beliefScore) {
+		this.beliefScore = beliefScore;
+	}
 	public String getUrl() {
 		return url;
 	}
@@ -69,6 +83,12 @@ public class LinkingResult {
 	}
 	public void setLink_prob(double link_prob) {
 		this.link_prob = link_prob;
+	}
+	
+	public boolean equals(LinkingResult obj) {
+	    if(this.label.contentEquals(obj.getLabel()) && this.start_index == obj.getStart_index() && this.end_index == obj.getEnd_index())
+	    	return false;
+	    return true;
 	}
 	
 	@Override

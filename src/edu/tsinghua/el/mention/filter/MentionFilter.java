@@ -2,24 +2,28 @@ package edu.tsinghua.el.mention.filter;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import edu.tsinghua.api.xlore.XloreGetEntity;
 import edu.tsinghua.el.model.CandidateSet;
 import edu.tsinghua.el.model.Entity;
 import edu.tsinghua.el.model.Mention;
+import edu.tsinghua.el.model.Position;
+import edu.tsinghua.el.model.Score;
 
 import org.ansj.domain.Result;
 import org.ansj.domain.Term;
 import org.ansj.splitWord.analysis.NlpAnalysis;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-
-
 import edu.tsinghua.el.common.Constant;
 import edu.tsinghua.el.index.AhoCorasickDoubleArrayTrie;
 import edu.tsinghua.el.index.IndexBuilder;
@@ -32,10 +36,9 @@ public class MentionFilter {
 	private HashMap<String, Integer> timeMap = new HashMap<String, Integer>();  //label   score
 	private HashMap<String, String> stringMap = new HashMap<String, String>();   //label   label::=value
 	
-	private List<Integer> PositionStart = new ArrayList<Integer>();
-	private List<Integer> PositionEnd = new ArrayList<Integer>();
-	private List<Integer> Ps_result = new ArrayList<Integer>();
-	private List<Integer> Pe_result = new ArrayList<Integer>();
+	private List<Position> positionList = new ArrayList<Position>();
+	private List<Position> positionResultList = new ArrayList<Position>();
+	
 	
 	private HashMap<Mention,CandidateSet> candidateSetMap = new HashMap<Mention,CandidateSet>();
 	int count = 0;
@@ -48,16 +51,16 @@ public class MentionFilter {
 		filterWp();
 	}
 	
-	private int selectByMaxLength(List<String> result)
+	private Position selectByMaxLength(HashSet<Position> result)
 	{
-		int choice = 0,lengthMax = -1;
-		for(int k=0; k<result.size(); k++)
+		int lengthMax = -1;
+		Position choice = null;
+		for(Position p : result)
 		{
-			String[] strsplit = result.get(k).split(";");
-			int length = Integer.parseInt(strsplit[1])-Integer.parseInt(strsplit[0]);
+			int length =  p.end - p.begin;
 			if (length>=lengthMax) {
 				lengthMax=length;
-				choice = k;
+				choice = p;
 			}
 		}
 		return choice;
@@ -71,108 +74,102 @@ public class MentionFilter {
 		for(int i=0; i<str.size(); i++)
 		{
 			String[] strsplit = str.get(i).split("::=");
-			Pattern pattern = Pattern.compile("[[0-9今昨明后前本上]+[年|月|日|时|分|秒]*]+"); 
+			Pattern pattern = Pattern.compile("[[0-9今昨明后前本上去]+[年|月|日|时|分|秒]*]+"); 
 			if(!pattern.matcher(strsplit[0]).matches() && !verbList.contains(strsplit[0]) )//不是数字、日期且不是动词
 			{
 				//System.out.println(str.get(i));
 				midResult.add(str.get(i));
-				Ps_result.add(PositionStart.get(i));
-				Pe_result.add(PositionEnd.get(i));
+				positionResultList.add(positionList.get(i));
 			}
 		}
+		positionList.clear();
 
 	}
-	
-	
-	
-	private void filterbyPosition(IndexBuilder ibd, String doc) 
-	{
-		midResult.clear();
-		List<String> result = new ArrayList<String>();
-		int endMax ;
-		for (int i=0; i<Ps_result.size(); i++) 
-		{
-			if (result.contains(Ps_result.get(i)+";"+Pe_result.get(i))) 
+	private void filterbyPosition_new(String doc){
+		Collections.sort(positionResultList);
+//		for(Position p : positionResultList){
+//			logger.info(p);
+//			//System.out.println(p);
+//		}
+		HashSet<Position> result = new HashSet<Position>();
+		boolean overlapFlag = false;
+		do{
+			overlapFlag = false;
+			int i = 0;
+			while(i < positionResultList.size())
 			{
-				continue;
-			}
-			/*for(String tmp : result)
-			{
-				System.out.println(tmp);
-			}*/
-			result.clear();
-			endMax = Pe_result.get(i);
-			result.add(Ps_result.get(i)+";"+Pe_result.get(i));
-			//查找重叠的mention
-			for (int j = i+1; j < i+20&&j<Ps_result.size(); j++) 
-			{//向下最多找19次
-				if (Ps_result.get(j)<endMax) 
-				{
-					result.add(Ps_result.get(j)+";"+Pe_result.get(j));
-					if (Pe_result.get(j)>endMax) 
+				Position pos = positionResultList.get(i);
+				logger.info( i + ": "+ pos + ", doc:" + doc.substring(pos.begin, pos.end));
+				int j = i + 1;
+				result.add(pos);
+				//找到重叠的position并加入result
+				while( j < positionResultList.size() && positionResultList.get(j).begin < pos.end){
+					result.add(positionResultList.get(j));
+					overlapFlag = true;
+					j ++;
+				}
+				if(result.size() > 1){
+					Position choice = null;
+					Score max_score = new Score(-1,-1,-1);
+					//找出重叠的position中得分最大的position
+					for(Position p : result)
 					{
-						endMax = Pe_result.get(j);
+						int freq = timeMap.get(doc.substring(p.begin, p.end));
+						int token_score = extractResult.contains(doc.substring(p.begin, p.end)) ? 2 : 0;
+						Score score = new Score(p.end - p.begin, token_score, freq);
+						logger.info(p +", doc:" + doc.substring(p.begin, p.end)+", len:" + (p.end - p.begin));
+						//System.out.println(p +", doc:" + doc.substring(p.begin, p.end)+", len:" + (p.end - p.begin) +", freq:" + freq + ", token:" + token_score + ", totel:" + score);
+						if(score.compareTo(max_score) > 0){
+							max_score = score;
+							choice = p;
+						}
+					}
+					logger.info("choice:" + choice + ", doc:" + doc.substring(choice.begin, choice.end));
+					//去掉不留的
+					j = i;
+					while( j < positionResultList.size() && positionResultList.get(j).begin < pos.end){
+						if(!positionResultList.get(j).equals(choice)){
+							logger.info("remove:" + positionResultList.get(j) + ", doc:" + doc.substring(positionResultList.get(j).begin, positionResultList.get(j).end));
+							positionResultList.remove(j);
+						}
+						j ++;
 					}
 				}
+				result.clear();
+				i ++;
 			}
-			
-			//不应该找最长的，有特殊情况，应该找end值最大的
-			for (int j = i+1; j < i+20&&j<Ps_result.size(); j++) 
-			{//向下找19次
-				if (Ps_result.get(j)<endMax) {
-					if (result.contains(Ps_result.get(j)+";"+Pe_result.get(j))) 
-					{
-						continue;
-					}
-					result.add(Ps_result.get(j)+";"+Pe_result.get(j));
-				}
-			}
-			List<Integer> scoreList = new ArrayList<Integer>();
-			for(int s=0; s<result.size(); s++)
-	        {
-				scoreList.add(0);
-	        }
-			//选择最长的
-			int choice = 0;
-			choice = selectByMaxLength(result);
-			String[] split = result.get(choice).split(";");
-			int length = Integer.parseInt(split[1])-Integer.parseInt(split[0]);
-			scoreList.set(choice, scoreList.get(choice)+length);  //+长度
-			//System.out.println(choice+" "+scoreList.get(choice));
-
-			for(int m=0; m<result.size(); m++)
-			{
-				String[] strsplit = result.get(m).split(";");
-				
-				int freq = timeMap.get(doc.substring(Integer.parseInt(strsplit[0]), Integer.parseInt(strsplit[1])));
-				scoreList.set(m, scoreList.get(m)+freq);  //+出现次数
-				
-				if(extractResult.contains(doc.substring(Integer.parseInt(strsplit[0]), Integer.parseInt(strsplit[1]))))
-				{
-					scoreList.set(m, scoreList.get(m)+2);  //分词结果中含有则+2
-				}
-				//System.out.println(m+" "+scoreList.get(m));
-			}		
-			
-			int max = 0;
-			for(int m=0; m<result.size(); m++)
-	        {
-				if(max < scoreList.get(m))
-				{
-					max = scoreList.get(m);
-					choice = m;
-				}
-	        }
-			String[] strsplit = result.get(choice).split(";");
-			String value = stringMap.get(doc.substring(Integer.parseInt(strsplit[0]), Integer.parseInt(strsplit[1])));
-			//System.out.println(value);
-			if(scoreList.get(choice) > 1){
-				insertMention(Integer.parseInt(strsplit[0]), Integer.parseInt(strsplit[1]), value);
-			}
+		}while(overlapFlag);
+		
+		//将剩余在positionResultList中的插入mentionList
+		for(Position p : positionResultList){
+			logger.info("insert mention:" + p + ", doc:" + doc.substring(p.begin, p.end));
+			//System.out.println(p + ", doc:" + doc.substring(p.begin, p.end));
+			insertMention(p.begin, p.end, stringMap.get(doc.substring(p.begin, p.end)));
 		}
+		
+		
 	}
 	
-	public HashMap<Mention,CandidateSet> disambiguating(String domainName, IndexBuilder ibd) throws IOException
+	public static <K, V extends Comparable<? super V>> HashMap<K, V> sortByValue(HashMap<K, V> map , final boolean reverse){
+        List<Map.Entry<K, V>> list =new LinkedList<>( map.entrySet() );
+        Collections.sort( list, new Comparator<Map.Entry<K, V>>()
+        {
+            @Override
+            public int compare( Map.Entry<K, V> o1, Map.Entry<K, V> o2 )
+            {
+                if (reverse)
+                    return - (o1.getValue()).compareTo(o2.getValue());
+                return (o1.getValue()).compareTo(o2.getValue());
+            }
+        } );
+        HashMap<K, V> result = new LinkedHashMap<>();
+        for (Map.Entry<K, V> entry : list)
+        {
+            result.put( entry.getKey(), entry.getValue() );
+        }
+        return result;
+    } 
+	public HashMap<Mention,CandidateSet> disambiguating(String domainNameList) throws IOException
 	{
 		//System.out.println(NlpAnalysis.parse("奥巴马"));
 		String extract = NlpAnalysis.parse(doc).toStringWithOutNature("&&");
@@ -180,12 +177,12 @@ public class MentionFilter {
 		for(String tmp: extractList)
 		{
 			extractResult.add(tmp);
-			//System.out.println(tmp);
+			//System.out.println("token:" + tmp);
 		}
     	List<String> str = new ArrayList<String>();
     	
     	long start = System.currentTimeMillis();
-    	List<AhoCorasickDoubleArrayTrie<String>.Hit<String>> wordList = ibd.parseText(domainName, doc);
+    	List<AhoCorasickDoubleArrayTrie<String>.Hit<String>> wordList = IndexBuilder.parseTextFromMultiIndex(domainNameList, doc);
     	long end = System.currentTimeMillis(); 
         logger.info("Parsing doc finish! Time:" + (float)(end - start)/1000);
     	//System.out.println("Parsing doc finish! Time:" + (float)(end - start)/1000);
@@ -213,6 +210,7 @@ public class MentionFilter {
     		
     		/******************************** end ******************************************/
     		String text = label + "::=" + tmp_hit.value + ":::" + prev_context + ":::" + after_context;
+    		logger.info(label +"[" + tmp_hit.begin + ", " + tmp_hit.end +  "]::=" + tmp_hit.value);
         	str.add(text);
         	stringMap.put(label, text);
 
@@ -224,9 +222,9 @@ public class MentionFilter {
         	{
         		timeMap.put(doc.substring(tmp_hit.begin, tmp_hit.end), 1);
         	}
-        	PositionStart.add(tmp_hit.begin);
-        	PositionEnd.add(tmp_hit.end);
+        	positionList.add(new Position(tmp_hit.begin, tmp_hit.end));
         }
+    	
     	/*for (Map.Entry<String, Integer> entry : timeMap.entrySet()) {
 			String key = entry.getKey();
 			int value = entry.getValue();
@@ -235,15 +233,13 @@ public class MentionFilter {
     	//FileManipulator.outputStringList(str, System.getProperty("user.dir") + news_path+"_original.txt");
 
     	filterNumberAndVerb(str, doc);
-		filterbyPosition(ibd, doc);
+    	filterbyPosition_new(doc);
 		
 		//FileManipulator.outputStringList(midResult, System.getProperty("user.dir") + news_path+"_filter.txt");
 		if(count != 0){
 			logger.info("Query total time:" + (float)(total_query_time)/1000 + "s, #query times:" + count + ", average:" + (float)(total_query_time/count)/1000 + "s");
 			//System.out.println("Query total time:" + (float)(total_query_time)/1000 + "s, #query times:" + count + ", average:" + (float)(total_query_time/count)/1000 + "s");
 		}
-		
-		//logger.info(candidateSetMap);
 		return candidateSetMap;
 	}
 	
@@ -261,11 +257,10 @@ public class MentionFilter {
     	midResult.add(item);
     	Mention mention = new Mention();
     	mention.setLabel(label);
-    	mention.setPos_start(begin);
-    	mention.setPos_end(end);
-    	mention.setPrev_context(prev_context);
-    	mention.setAfter_context(after_context);
-    	mention.setContext_entity(getNounOfString(prev_context + after_context));
+    	mention.setPosition(begin, end);
+    	//mention.setPrev_context(prev_context);
+    	//mention.setAfter_context(after_context);
+    	mention.setContext_words(getNounOfString(prev_context + after_context));
     	CandidateSet cs = new CandidateSet();
     	String[] tmp_c = value.split("::=");
     	for(String ss : tmp_c){
@@ -289,11 +284,11 @@ public class MentionFilter {
     	candidateSetMap.put(mention, cs);
 	}
 
-	private HashSet<String> getNounOfString(String text){
+	private ArrayList<String> getNounOfString(String text){
 		Result text_ansj = NlpAnalysis.parse(text);
-		HashSet<String> noun_list = new HashSet<String>();
+		ArrayList<String> noun_list = new ArrayList<String>();
 		for(Term item : text_ansj){
-			if(item.getNatureStr().contains("n")){
+			if(item.getNatureStr().contains("n") && !item.getName().isEmpty()){
 				noun_list.add(item.getName());
 			}
 		}
@@ -317,7 +312,7 @@ public class MentionFilter {
 	private HashSet<String> getAdjectiveOfDoc(){
 		HashSet<String> adj_list = new HashSet<String>();
 		for(Term item : ansj_result){
-			if(item.getNatureStr().contentEquals("a")){
+			if(item.getNatureStr().contentEquals("a") && !item.getName().isEmpty()){
 				adj_list.add(item.getName());
 			}
 		}

@@ -8,8 +8,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -19,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import edu.tsinghua.el.common.Constant;
 import edu.tsinghua.el.common.PropertiesReader;
+import edu.tsinghua.el.index.AhoCorasickDoubleArrayTrie.Hit;
 
 /**
  * Created by ethan on 16/3/23.
@@ -94,8 +99,26 @@ public class IndexBuilder {
     }
     
    
-    public List<AhoCorasickDoubleArrayTrie<String>.Hit<String>> parseText(String domainName, String doc){
+    public static List<AhoCorasickDoubleArrayTrie<String>.Hit<String>> parseText(String domainName, String doc){
     	return getIndex(domainName).parseText(doc);
     }
+	public static List<AhoCorasickDoubleArrayTrie<String>.Hit<String>> parseTextFromMultiIndex(String domainNameList,
+			String doc) {
+		String[] nameList = domainNameList.split(",");
+		HashSet<AhoCorasickDoubleArrayTrie<String>.Hit<String>> collectedEmits = new HashSet<AhoCorasickDoubleArrayTrie<String>.Hit<String>>();
+		for (String s : nameList){
+			logger.info("parsing domain:" + s);
+			for(AhoCorasickDoubleArrayTrie<String>.Hit<String> tmp : parseText(s,doc)){
+				if(!collectedEmits.contains(tmp)){
+					collectedEmits.add(tmp);
+				}
+			}
+		}
+		//logger.info("no duplicated parsed collections:");
+		//logger.info(collectedEmits);
+		List<AhoCorasickDoubleArrayTrie<String>.Hit<String>> result = new ArrayList<AhoCorasickDoubleArrayTrie<String>.Hit<String>>();
+		result.addAll(collectedEmits);
+		return result;
+	}
     
 }

@@ -10,8 +10,6 @@ import org.apache.struts2.ServletActionContext;
 import org.apache.struts2.json.annotations.JSON;
 
 import com.opensymphony.xwork2.ActionSupport;
-
-import edu.tsinghua.el.model.FormData;
 import edu.tsinghua.el.model.LinkingResult;
 import edu.tsinghua.el.service.EntityLinkingServiceImpl;
 
@@ -50,20 +48,26 @@ public class LinkingAction extends ActionSupport{
 		this.resultList = resultList;
 	}
 
-	public String execute() throws Exception{
-		logger.info("Text Acceptted: " + text);
-		logger.info("Indedx Choose Acceptted: " + index_choose);
-		
-		EntityLinkingServiceImpl linkingIns = new EntityLinkingServiceImpl();
-		resultList = linkingIns.linking(text, index_choose);
-		
-		logger.info("Linking Result List:" + resultList);
-		System.out.println("Linking Result List:" + resultList);
-		HttpServletResponse response = ServletActionContext.getResponse();
-		response.setContentType("text/xml;charset=UTF-8");
-		response.setHeader("Cache-Control", "no-cache");
-		
-		return SUCCESS;
+	public String execute(){
+		try{
+			logger.info("Text Acceptted: " + text);
+			logger.info("Indedx Choose Acceptted: " + index_choose);
+
+			EntityLinkingServiceImpl linkingIns = new EntityLinkingServiceImpl();
+			resultList = linkingIns.linking(text, index_choose);
+			
+			logger.info("Linking Result List:" + resultList);
+			System.out.println("Linking Result List:" + resultList);
+			HttpServletResponse response = ServletActionContext.getResponse();
+			response.setContentType("text/xml;charset=UTF-8");
+			response.setHeader("Cache-Control", "no-cache");
+			
+			return SUCCESS;
+			
+		}catch(Exception e){
+			logger.error(e.getMessage(), e);
+			throw e;
+		}
 		
 	}
 }
