@@ -24,6 +24,6 @@ public abstract class AbstractEntity implements Comparable<AbstractEntity>{
     }
     
     public int compareTo(AbstractEntity arg0) {
-        return this.getTitle().compareTo(arg0.getTitle());
+        return id.compareTo(arg0.getId());
     }
 }

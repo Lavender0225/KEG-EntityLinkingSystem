@@ -27,8 +27,8 @@ public class RepresentationRanking {
 	private static Word2VEC vecModel = Word2VEC.getInstance();
 	private static final Logger logger = LogManager.getLogger(RepresentationRanking.class);
 	
-	public static void processing(String domainNameList, String doc){
-		candidateSetMap = CandidateGeneration.extractMentionForNewsFromString(domainNameList, doc);
+	public static void processing(String domainNameList, String doc, String language){
+		candidateSetMap = CandidateGeneration.extractMentionForNewsFromString(domainNameList, doc, language);
 		//L2R order:sortByMentionPos()
 		//S2R order:sortByCSetSize()
 		candidateSetMap = sortByCSetSize(candidateSetMap, false); // size 1 -> size n

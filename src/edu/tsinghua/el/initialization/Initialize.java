@@ -6,18 +6,22 @@ import javax.servlet.http.HttpServlet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import ansj.word2vec.Word2VEC;
-import edu.tsinghua.api.xlore.GetLinkProb;
-import edu.tsinghua.api.xlore.XloreGetPopularity;
+import baike.entity.dao.BaikeProbManager;
+import baike.entity.dao.WikiURLMap;
 import edu.tsinghua.el.common.PropertiesReader;
 import edu.tsinghua.el.index.IndexBuilder;
+import edu.tsinghua.el.model.vec.BaiduWikiModels;
 
-public class Initialize  extends HttpServlet{
+public class Initialize extends HttpServlet{
 
 	private static final long serialVersionUID = 1L;
 	
 	private static final Logger logger = LogManager.getLogger(Initialize.class);
 	
+	/**
+	 * xlore data init() version
+	 */
+	/*
 	public void init() throws ServletException{
 		logger.info("Initialization starts...");
 		long start = System.currentTimeMillis();
@@ -38,5 +42,21 @@ public class Initialize  extends HttpServlet{
 		logger.info("Initialzation finished. Time: " + (float)(end - start)/1000 + "s.");
 		
 	}
-
+	*/
+	/**
+	 * baidu data init() version
+	 */
+	public void init() throws ServletException{
+		logger.info("Initialization starts...");
+		long start = System.currentTimeMillis();
+		// load properties
+		logger.info(PropertiesReader.getDomainIndexMap());
+		IndexBuilder ibd = IndexBuilder.getInstance();
+		BaiduWikiModels model = BaiduWikiModels.getInstance();
+		BaikeProbManager pModel = BaikeProbManager.getInstance();
+		WikiURLMap.getURL("1");
+		long end = System.currentTimeMillis();
+		logger.info("Initialzation finished. Time: " + (float)(end - start)/1000 + "s.");
+		
+	}
 }

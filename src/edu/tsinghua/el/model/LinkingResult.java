@@ -1,6 +1,8 @@
 package edu.tsinghua.el.model;
 
-public class LinkingResult {
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
+public class LinkingResult implements Comparable<LinkingResult>{
 	private int start_index;
 	private int end_index;
 	private String label;
@@ -85,11 +87,23 @@ public class LinkingResult {
 		this.link_prob = link_prob;
 	}
 	
-	public boolean equals(LinkingResult obj) {
-	    if(this.label.contentEquals(obj.getLabel()) && this.start_index == obj.getStart_index() && this.end_index == obj.getEnd_index())
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == null || !LinkingResult.class.isAssignableFrom(obj.getClass()) )
+			return false;
+		LinkingResult o = (LinkingResult) obj;
+	    if(this.label.contentEquals(o.getLabel()) && this.url.contentEquals(o.getUrl()))
 	    	return false;
 	    return true;
 	}
+	 @Override
+	    public int hashCode() {
+	        return new HashCodeBuilder(17, 31). // two randomly chosen prime numbers
+	            // if deriving: appendSuper(super.hashCode()).
+	            append(label).
+	            append(url).
+	            toHashCode();
+	    }
 	
 	@Override
 	public String toString() {
@@ -99,6 +113,17 @@ public class LinkingResult {
 				+ ", popularity_score=" + popularity_score
 				+ ", relatedness_score=" + relatedness_score + "]";
 	}
+	@Override
+	public int compareTo(LinkingResult o) {
+		if(this.beliefScore < o.getBeliefScore()){
+			return 1;
+		}
+		else if(this.beliefScore == o.getBeliefScore())
+			return 0;
+			
+		return -1;
+	}
+	
 	
 	
 	

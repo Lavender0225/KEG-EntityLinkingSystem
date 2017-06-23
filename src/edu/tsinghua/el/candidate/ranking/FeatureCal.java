@@ -3,7 +3,7 @@ package edu.tsinghua.el.candidate.ranking;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import edu.tsinghua.el.model.Entity;
+import edu.tsinghua.el.model.XloreEntity;
 import edu.tsinghua.el.model.Mention;
 
 /**
@@ -128,7 +128,7 @@ public class FeatureCal {
 	 * @param desc, the description of a mention, assuming the form is mention_label(desc)
 	 * @return
 	 */
-	public static double simOfDescAndType(Entity entity, String desc){
+	public static double simOfDescAndType(XloreEntity entity, String desc){
 		double max_score = 0;
 		double tmp_score = 0;
 		if(isEnglish(desc)){

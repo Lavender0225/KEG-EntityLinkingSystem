@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.tsinghua.el.model.Entity;
+import edu.tsinghua.el.model.XloreEntity;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -26,9 +26,9 @@ import edu.tsinghua.el.common.Constant;
  */
 public class XloreGetEntity {
 	
-	public static Entity getEntityDetailByID(String id){
+	public static XloreEntity getEntityDetailByID(String id){
 		// get result fron http query
-		String url = "http://10.1.1.66:8080/query?uri=" + Constant.xlore_entity_prefix + id;
+		String url = "http://10.1.1.66:8080/query?uri=" + Constant.xloreEntityPrefix + id;
         //System.out.println(url);
         StringBuilder json = new StringBuilder();
         try {
@@ -51,7 +51,7 @@ public class XloreGetEntity {
 		return parse(id, json.toString());
 		
 	}
-	public static Entity parse(String id, String jsonLine) {
+	public static XloreEntity parse(String id, String jsonLine) {
 		if(jsonLine.isEmpty())
 			return null;
 	    JsonElement jelement = new JsonParser().parse(jsonLine);
@@ -156,7 +156,7 @@ public class XloreGetEntity {
 		    		infobox_en.put(label_en_tmp, value_en);
 		    	}
 		    }
-		    return new Entity(id, label_zh, label_en, mention_list, abstract_en, abstract_zh, super_classes_en, super_classes_zh,
+		    return new XloreEntity(id, label_zh, label_en, mention_list, abstract_en, abstract_zh, super_classes_en, super_classes_zh,
 					related_items_zh, related_items_en, infobox_zh, infobox_en);
 	    }catch(Exception e){
 	    	//e.printStackTrace();
@@ -169,7 +169,7 @@ public class XloreGetEntity {
 
 	public static void main(String[] args) {
 		System.out.println(XloreGetEntity.getEntityDetailByID("87320").toString());
-		String url = "http://xlore.org/query?uri=" + Constant.xlore_entity_prefix + "87320";
+		String url = "http://xlore.org/query?uri=" + Constant.xloreEntityPrefix + "87320";
         //System.out.println(url);
         StringBuilder json = new StringBuilder();
         try {

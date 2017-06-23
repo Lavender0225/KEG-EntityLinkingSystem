@@ -1,7 +1,10 @@
 package edu.tsinghua.el.model;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import baike.entity.dao.WikiIDMap;
 
 public class Mention {
 	
@@ -10,15 +13,41 @@ public class Mention {
     private String result_entity_id;
     private ArrayList<String> context_words;
     private double link_prob;
+    private String truth_id;
+    private boolean valid;
+    private double belief_score = 0;
 
     public Mention(){
     	position = new Position(0, 0);
     	context_words = new ArrayList<String>();
     	result_entity_id = null;
     	link_prob = 0.000001;
+    	truth_id = null;
+    	valid = true;
     }
 
-    public String getLabel(){
+    
+    public double getBelief_score() {
+		return belief_score;
+	}
+
+
+	public void setBelief_score(double belief_score) {
+		this.belief_score = belief_score;
+	}
+
+
+	public boolean isValid() {
+		return valid;
+	}
+
+
+	public void setValid(boolean valid) {
+		this.valid = valid;
+	}
+
+
+	public String getLabel(){
         return this.label;
     }
 
@@ -61,17 +90,44 @@ public class Mention {
 	public void setLink_prob(double link_prob) {
 		this.link_prob = link_prob;
 	}
+	
+	
+
+	public String getTruth_id() {
+		return truth_id;
+	}
+
+	public void setTruth_id(String truth_id) {
+		this.truth_id = truth_id;
+	}
 
 	@Override
 	public String toString() {
 		return "Mention [label=" + label 
 				+ ", result_entity_id=" + result_entity_id
 				+ ", pos_start=" + position.begin + ", pos_end=" + position.end
+				+ ", link_prob=" + link_prob
 				+ ", context_entity=" + context_words
-				+ ", result_entity_id=" + result_entity_id 
+				+ ", trutj_id=" + truth_id 
+				+ ", belief_score=" + belief_score
 				
 				+ "]\n";
 	}
+	
+	@Override
+    public boolean equals(Object obj){
+		if(obj == null) return false;
+		Mention o = (Mention) obj;
+        return this.label.contentEquals(o.getLabel()) && this.position.equals(o.getPosition());
+    }
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 31) // two randomly chosen prime numbers
+            // if deriving: appendSuper(super.hashCode()).
+        	.append(label)
+        	.append(position)
+            .toHashCode();
+    }
 
 	
     

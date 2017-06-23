@@ -68,7 +68,7 @@ public class Word2VEC {
 	public float[] getEntityVec(String entity_id){
 		if(baiduXloreMap.containsKey(entity_id)){
 			String baidu_id = baiduXloreMap.get(entity_id);
-			baidu_id = (String) baidu_id.subSequence(Constant.baidu_entity_prefix.length(), baidu_id.length());
+			baidu_id = (String) baidu_id.subSequence(Constant.baiduEntityPrefix.length(), baidu_id.length());
 			return entityMap.get(baidu_id);
 		}
 		return null;
@@ -111,7 +111,7 @@ public class Word2VEC {
 	public boolean containsEntity(String entity_id){
 		if(baiduXloreMap.containsKey(entity_id)){
 			String baidu_id = baiduXloreMap.get(entity_id);
-			baidu_id = (String) baidu_id.subSequence(Constant.baidu_entity_prefix.length(), baidu_id.length());
+			baidu_id = (String) baidu_id.subSequence(Constant.baiduEntityPrefix.length(), baidu_id.length());
 			if(entityMap.containsKey(baidu_id)){
 				logger.info("entity id:" + entity_id + " is in the vec model");
 				return true;
@@ -542,9 +542,9 @@ public class Word2VEC {
 	public double similarityOfBaiduEntity(String id1, String id2){
 		if(baiduXloreMap.containsKey(id2) && baiduXloreMap.containsKey(id1)){
 			String baidu_id1 = baiduXloreMap.get(id1);
-			baidu_id1 = (String) baidu_id1.subSequence(Constant.baidu_entity_prefix.length(), baidu_id1.length());
+			baidu_id1 = (String) baidu_id1.subSequence(Constant.baiduEntityPrefix.length(), baidu_id1.length());
 			String baidu_id2 = baiduXloreMap.get(id2);
-			baidu_id2 = (String) baidu_id2.subSequence(Constant.baidu_entity_prefix.length(), baidu_id2.length());
+			baidu_id2 = (String) baidu_id2.subSequence(Constant.baiduEntityPrefix.length(), baidu_id2.length());
 			if(entityMap.containsKey(baidu_id1) && entityMap.containsKey(baidu_id2)){
 				float[] s1 = this.entityMap.get(baidu_id1);
 				float[] s2 = this.entityMap.get(baidu_id2);

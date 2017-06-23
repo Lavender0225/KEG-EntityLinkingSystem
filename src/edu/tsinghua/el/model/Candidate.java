@@ -1,7 +1,7 @@
 package edu.tsinghua.el.model;
 
 public class Candidate {
-	private Entity entity;
+	private AbstractEntity entity;
 //	private double label_edit_distance; 	// range: [0, 1]
 //	private double label_equals;
 //	private double label_contains;
@@ -21,6 +21,11 @@ public class Candidate {
 	private double contextEntitySim;
 	private double belifScore;
 	
+	private double entityPrior;
+	private double mGivenEProb;
+	
+	private double nameSim;
+	
 	public Candidate(){
 //		label_edit_distance = 0;
 //		
@@ -36,10 +41,42 @@ public class Candidate {
 		contextWordsSim = 0.0001;
 		contextEntitySim = 0.0001;
 		belifScore = 0.0001;
+		nameSim = 0.0001;
 		entity = null;
+		entityPrior = 0.0000001;
 	}
 	
-	
+
+	public double getNameSim() {
+		return nameSim;
+	}
+
+
+	public void setNameSim(double nameSim) {
+		this.nameSim = nameSim;
+	}
+
+
+	public double getEntityPrior() {
+		return entityPrior;
+	}
+
+
+	public void setEntityPrior(double entity_prior) {
+		this.entityPrior = entity_prior;
+	}
+
+
+	public double getMGivenEProb() {
+		return mGivenEProb;
+	}
+
+
+	public void setMGivenEProb(double mention_given_entity_prob) {
+		this.mGivenEProb = mention_given_entity_prob;
+	}
+
+
 	public double getContextWordsSim() {
 		return contextWordsSim;
 	}
@@ -75,11 +112,11 @@ public class Candidate {
 	}
 
 
-	public Entity getEntity() {
+	public AbstractEntity getEntity() {
 		return entity;
 	}
-	public void setEntity(Entity entity) {
-		this.entity = entity;
+	public void setEntity(AbstractEntity tmp_e) {
+		this.entity = tmp_e;
 	}
 
 //	public double getLabelEditDistance() {
@@ -180,9 +217,12 @@ public class Candidate {
 				// + "reletedness=" + relatedness
 				//+ ", label_edit_distance="+ label_edit_distance 
 				+ "popularity=" + popularity
+				+ ", prior=" + entityPrior
 				//+ ", cohenrence=" + cohenrence_score
 				+ ", contextWordsSim=" + contextWordsSim
 				+ ", contextEntitySim=" + contextEntitySim
+				+ ", nameSim=" + nameSim
+				+ ", probMGivenE=" + mGivenEProb
 				+ ", belifScore="  + belifScore
 				//+ ", label_equals=" + label_equals + ", label_contains="
 				//+ label_contains + ", label_startwith=" + label_startwith

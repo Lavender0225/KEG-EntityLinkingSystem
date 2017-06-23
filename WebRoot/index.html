@@ -106,10 +106,24 @@
 					var resultObj = userObj.ResultList;
 					var text = String(userObj.text);
 					var myText = text;
+					var drift = 0;
+					resultObj.sort(function(a, b) {
+						return a["start_index"] - b["start_index"];
+					});
+					
 					for(var i=0;i<resultObj.length;i++){
-						//myText = mytext.substring(0, resultObj[i]["start"]) + resultObj[i]["label"].link(resultObj[i]["url"]) + text.substr(resultObj[i]["end"] + 1);
-						myText = myText.replace(new RegExp(resultObj[i]["label"], "gm"), resultObj[i]["label"].link(resultObj[i]["url"]));
+						myText = myText.substring(0, resultObj[i]["start_index"] + drift) + text.substring(resultObj[i]["start_index"],resultObj[i]["end_index"]).link(resultObj[i]["url"]) + myText.substr(resultObj[i]["end_index"] + drift);
+						drift += text.substring(resultObj[i]["start_index"],resultObj[i]["end_index"]).link(resultObj[i]["url"]).length - resultObj[i]["label"].length;
+						//console.log("drift+" + resultObj[i]["url"].length);
+						//console.log(text.substring(resultObj[i]["start_index"],resultObj[i]["end_index"]).link(resultObj[i]["url"]));
+						//console.log(text.substring(resultObj[i]["start_index"],resultObj[i]["end_index"]).link(resultObj[i]["url"]).length);
+
+						//myText = myText.replace(new RegExp(resultObj[i]["label"], "gm"), resultObj[i]["label"].link(resultObj[i]["url"]));
 					}
+					resultObj.sort(function(a, b) {
+						return b["beliefScore"] - a["beliefScore"];
+					});
+					
 					
 					var myTable = "<table>";
 					myTable += "<tr><td>label</td><td>start</td><td>end</td>><td>url</td><td>BeliefScore</td><td>Popularity</td><td>ContextSim</td><td>Coherence</td><td>Link Probability</td></tr>"; 
@@ -133,7 +147,7 @@
 					for(var i=0;i<resultObj.length;i++)
 					{
 						myTable += "<tr>";
-						myTable += "<td>"+resultObj[i]["label"]+"</td>";
+						myTable += "<td>"+text.substring(resultObj[i]["start_index"],resultObj[i]["end_index"])+"</td>";
 						myTable += "<td style='width: 100px; text-align: right;'>"+resultObj[i]["start_index"] + " - " + resultObj[i]["end_index"] +"</td>";
 						myTable += "<td style='width: 300px;text-align: right;'>"+resultObj[i]["url"].link(resultObj[i]["url"])+"</td>";
 						myTable += "<td style='width: 100px;text-align: right;'>"+resultObj[i]["beliefScore"].toFixed(4)+"</td>";
@@ -166,6 +180,7 @@
 			<div class="row-fluid">
 				<h4>Choose Domain</h4>
 				<div id="ichecks">
+				<!--
 					<li>
 						<label id="index_type_per" for="minimal-checkbox-1" class="">
 							<input type='checkbox'  id="person" checked>
@@ -206,6 +221,19 @@
 						<label id="index_type_tech" for="minimal-checkbox-7" class="">
 							<input type='checkbox'  id="medicine" >
 							Medicine
+						</label>
+					</li>
+					!-->
+					<li>
+						<label id="language_zh" for="minimal-checkbox-6" class="">
+							<input type='checkbox'  id="zh" >
+							Chinese
+						</label>
+					</li>
+					<li>
+						<label id="language_en" for="minimal-checkbox-7" class="">
+							<input type='checkbox'  id="en" >
+							English
 						</label>
 					</li>
 				</div>

@@ -24,15 +24,38 @@ public class Constant {
     
     public static int entity_min_length = 2;
     
-    public static final String xlore_entity_prefix = "http://xlore.org/instance/";
-    public static final String baidu_entity_prefix = "http://baike.baidu.com"; 
-    public static int mention_context_window = 50;
+    public static final String xloreEntityPrefix = "http://xlore.org/instance/";
+    public static final String baiduEntityPrefix = "http://baike.baidu.com";
+    public static final String wikiEntityPrefix = "https://en.wikipedia.org/wiki/";
+    public static int mention_context_window_zh = 50;
+    public static int mention_context_window_en = 250;
     
     //public static String popularity_path = "./etc/entity/popularity.txt";
     public static String commonness_path = "/home/zj/EntityLinkingWeb/etc/entity/popularity_.txt";
     public static String commonness_ready_path = "/home/zj/EntityLinkingWeb/etc/entity/commonnessReadyForInput";
     
-    // linkprob file path
+    //baidu input files
+    public static String baiduDataPrefix = "/home/zj/EntityLinkingWeb/data/baidu/";
+    public static String baiduEntityPriorFile = baiduDataPrefix + "prob/baidu_entity_prior.dat";
+    public static String baiduMGivenEProbFile = baiduDataPrefix + "prob/prob_mention_entity.dat";
+    public static String baiduLinkProbFile = baiduDataPrefix + "prob/link_prob.dat";
+    public static String baiduDictionaryFile = baiduDataPrefix + "dic/dictionary_baidu.dat";
+    public static String baiduEntityVec = baiduDataPrefix + "vec_model/vectors_entity";
+    public static String baiduWordVec = baiduDataPrefix + "vec_model/vectors_word";
+    public static String baiduTrie = baiduDataPrefix + "trie/baidu.trie";
+    
+    //wiki input files
+    public static String wikiDataPrefix = "/home/zj/EntityLinkingWeb/data/wiki/";
+    public static String wikiEntityPriorFile = wikiDataPrefix + "prob/wiki_entity_prior.dat";
+    public static String wikiMGivenEProbFile = wikiDataPrefix + "prob/prob_mention_entity.dat";
+    public static String wikiLinkProbFile = wikiDataPrefix + "prob/link_prob.dat";
+    public static String wikiDictionaryFile = wikiDataPrefix + "dic/dictionary_wiki.dat";
+    public static String wikiEntityVec = wikiDataPrefix + "vec_model/vectors_entity";
+    public static String wikiWordVec = wikiDataPrefix + "vec_model/vectors_word";
+    public static String wikiTrie = wikiDataPrefix + "trie/wiki.trie";
+    public static String wikiURLMap = wikiDataPrefix + "prob/wiki_url_map.dat";
+    public static String wikiIdMap = wikiDataPrefix + "dic/vocab_entity.dat";
+    // xlore linkprob file path
     public static String linkProbPath = "/home/zj/EntityLinkingWeb/etc/entity/link_prob.dat";
     
     // constants of traditional ranking algorithm

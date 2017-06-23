@@ -19,10 +19,10 @@ public class CandidateSet {
 	public CandidateSet(){
 		set = new HashMap<String, Candidate>();
 	}
-	public void addElement(String id, Entity entity){
-		if(!set.containsKey(id) && entity != null){
+	public void addElement(String id, AbstractEntity tmp_e){
+		if(!set.containsKey(id) && tmp_e != null){
 			Candidate c = new Candidate();
-			c.setEntity(entity);
+			c.setEntity(tmp_e);
 			set.put(id, c);
 		}
 	}

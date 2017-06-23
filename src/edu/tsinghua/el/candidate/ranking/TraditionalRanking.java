@@ -17,9 +17,10 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Map.Entry;
 
+import edu.tsinghua.el.model.AbstractEntity;
 import edu.tsinghua.el.model.Candidate;
 import edu.tsinghua.el.model.CandidateSet;
-import edu.tsinghua.el.model.Entity;
+import edu.tsinghua.el.model.XloreEntity;
 import edu.tsinghua.el.model.Mention;
 
 import org.apache.logging.log4j.LogManager;
@@ -44,8 +45,8 @@ public class TraditionalRanking {
 	 * @param domainNameList, format:"index1,index2"
 	 * @param doc
 	 */
-	public static void processing(String domainNameList, String doc){
-		candidateSetMap = CandidateGeneration.extractMentionForNewsFromString(domainNameList, doc);
+	public static void processing(String domainNameList, String doc, String language){
+		candidateSetMap = CandidateGeneration.extractMentionForNewsFromString(domainNameList, doc, language);
 		logger.info("Before Ranking:" + candidateSetMap.toString());
 		ranking();
 		coherenceMap = calCoherence();
@@ -54,8 +55,8 @@ public class TraditionalRanking {
 		prune();
 		logger.info(candidateSetMap.toString());
 	}
-	public void processing(String domainName, String doc, String result_path){
-		candidateSetMap = CandidateGeneration.extractMentionForNewsFromString(domainName, doc);
+	public void processing(String domainName, String doc, String result_path, String language){
+		candidateSetMap = CandidateGeneration.extractMentionForNewsFromString(domainName, doc, language);
 		//ogger.info(candidateSetMap.toString());
 		ranking();
 		prune();
@@ -230,7 +231,7 @@ public class TraditionalRanking {
 	private static HashMap<String, Float> calCoherence(){
 		logger.info("Calculating cohenrence...");
 		HashMap<String, Float> resultMap = new HashMap<String, Float>();
-		HashSet<Entity> entitySet = new HashSet<Entity>();
+		HashSet<AbstractEntity> entitySet = new HashSet<AbstractEntity>();
 		Iterator<Entry<Mention, CandidateSet>> entries = candidateSetMap.entrySet().iterator();
 		while(entries.hasNext()){
 			Entry<Mention, CandidateSet> entry = entries.next();
@@ -244,9 +245,9 @@ public class TraditionalRanking {
 				entitySet.add(candidate.getEntity());
 			}
 		}
-		for(Entity e : entitySet){
+		for(AbstractEntity e : entitySet){
 			float score = 0;
-			for (Entity e2 : entitySet){
+			for (AbstractEntity e2 : entitySet){
 				
 				score += vec_model.similarityOfBaiduEntity(e.getId(), e2.getId());
 			}
